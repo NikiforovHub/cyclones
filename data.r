@@ -1,0 +1,66 @@
+read_nc_file = function(file_path){
+  library(ncdf)
+  nc <- open.ncdf(file_path)
+  lon <- get.var.ncdf(nc,"longitude")
+  nlon <- dim(lon)
+  lat <- get.var.ncdf(nc,"latitude")
+  time <- get.var.ncdf(nc,"time")
+  tunits <- att.get.ncdf(nc, "time", "units")
+  dates <- as.POSIXct(time*3600, origin = "1900-01-01", tz="GMT")
+  var <- get.var.ncdf(nc,"msl")
+  
+  result = list(lat=lat, lon=lon, time=dates, values=var)
+  return(result)
+}
+
+normalize_values = function(values){
+  timestamps = dim(values)[3]
+  for(i in 1:timestamps){
+    values[,,i] = normalize_matrix(values[,,i])
+  }
+  return(values)
+}
+
+normalize_matrix = function(matrix){
+  min = min(matrix)
+  matrix = matrix - min
+  max = max(matrix)
+  matrix = matrix / max
+  return(matrix)
+}
+
+get_summary = function(data_list){
+  timestamps = dim(data_list$values)[3]
+  lon = dim(data_list$values)[1]
+  lat = dim(data_list$values)[2]
+  result = matrix(sample(0, lon * lat, replace = TRUE),nrow=lon, ncol=lat)
+  for(i in 1:timestamps){
+    result = result + data_list$values[,,i]
+  }
+  return(result)
+}
+
+get_map_frame = function(data_list){
+  lon_length = dim(data_list$values)[1]
+  lat_length = dim(data_list$values)[2]
+  frame_matrix = matrix(0,lon_length*lat_length,3)
+  result_frame = data.frame(lat=integer(),lon=integer(),value=numeric())
+  for(i in 1:lat_length){
+    for(j in 1:lon_length){
+      frame_matrix[(i-1)*lon_length+j,1] = data_list$lat[i]
+      frame_matrix[(i-1)*lon_length+j,2] = data_list$lon[j]
+      frame_matrix[(i-1)*lon_length+j,3] = data_list$summary[j,i]
+    }
+  }
+  result_frame = data.frame(frame_matrix) 
+  return(result_frame)
+}
+
+ggplot_map_frame = function(frame){
+  library(ggplot2)
+  p = ggplot(frame, 
+             aes(x = frame$X2, y = frame$X1, z = frame$X3, fill = frame$X3)) + 
+    scale_fill_gradient(low="red", high="blue") +
+    geom_tile()
+  plot(p)
+}
