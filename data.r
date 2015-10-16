@@ -29,16 +29,32 @@ normalize_matrix = function(matrix){
   return(matrix)
 }
 
-get_summary = function(data_list){
+get_summary = function(data_list,month=NULL){
   timestamps = dim(data_list$values)[3]
+  time = as.character(data_list$time)
+  tmp = strsplit(time, "[^0-9]+")
+  monthstamps = NULL
+  for (i in 1:timestamps){
+    monthstamps[i] = as.numeric(tmp[[i]][2])
+  }
   lon = dim(data_list$values)[1]
   lat = dim(data_list$values)[2]
   result = matrix(sample(0, lon * lat, replace = TRUE),nrow=lon, ncol=lat)
-  for(i in 1:timestamps){
-    result = result + data_list$values[,,i]
+    if (is.null(month)){
+    for(i in 1:timestamps){
+      result = result + data_list$values[,,i]
+    }
+  }else{
+    for(i in 1:timestamps){
+      if (monthstamps[i] == month) {
+        result = result + data_list$values[,,i]
+      }
+    }  
   }
   return(result)
 }
+
+
 
 get_map_frame = function(data_list){
   lon_length = dim(data_list$values)[1]
@@ -60,7 +76,39 @@ ggplot_map_frame = function(frame){
   library(ggplot2)
   p = ggplot(frame, 
              aes(x = frame$X2, y = frame$X1, z = frame$X3, fill = frame$X3)) + 
-    scale_fill_gradient(low="red", high="blue") +
+    scale_fill_gradient(low="red", high="white") +
     geom_tile()
-  plot(p)
+  return(p)
+}
+
+ggmap_map_frame = function(frame){
+  library(ggmap)
+  europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
+  map = ggmap(europe_map, extent = "device") + 
+    geom_point(data = frame, aes(x = X2, y = X1, colour = 1-X3, alpha = 1-X3), size = 10)+
+    scale_color_gradient(low = "white", high = "red", guide=FALSE) +
+    scale_alpha(range = c(0, 0.03), guide = FALSE)
+  plot(map)
+  return(map)
+}
+
+leaflet_map_frame = function(frame){
+  library(leaflet)
+  m = leaflet() %>% addTiles() %>% addCircles(data = frame, lat = ~ X1, lng = ~ X2, radius = 1, color = "red")
+  return(m)
+}
+
+
+get_months_vector = function(data_list){
+  month = NULL
+  for (i in 1:timestamps){
+    timestamps = dim(data_list$values)[3]
+    time = as.character(data$time)
+    tmp = strsplit(time, "[^0-9]+")
+    monthstamps = NULL
+    for (i in 1:timestamps){
+      monthstamps[i] = as.numeric(tmp[[i]][2])
+    }
+  }
+  return(unique(monthstamps)) 
 }
