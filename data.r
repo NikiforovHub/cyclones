@@ -10,8 +10,11 @@ read_nc_file = function(file_path){
   var <- get.var.ncdf(nc,"msl")
   
   result = list(lat=lat, lon=lon, time=dates, values=var)
+  close(file_path)
+  rm(nc)
   return(result)
 }
+
 
 normalize_values = function(values){
   timestamps = dim(values)[3]
@@ -21,6 +24,7 @@ normalize_values = function(values){
   return(values)
 }
 
+
 normalize_matrix = function(matrix){
   min = min(matrix)
   matrix = matrix - min
@@ -28,6 +32,7 @@ normalize_matrix = function(matrix){
   matrix = matrix / max
   return(matrix)
 }
+
 
 get_summary = function(data_list,month=NULL){
   timestamps = dim(data_list$values)[3]
@@ -55,7 +60,6 @@ get_summary = function(data_list,month=NULL){
 }
 
 
-
 get_map_frame = function(data_list){
   lon_length = dim(data_list$values)[1]
   lat_length = dim(data_list$values)[2]
@@ -72,6 +76,7 @@ get_map_frame = function(data_list){
   return(result_frame)
 }
 
+
 ggplot_map_frame = function(frame){
   library(ggplot2)
   p = ggplot(frame, 
@@ -79,36 +84,4 @@ ggplot_map_frame = function(frame){
     scale_fill_gradient(low="red", high="white") +
     geom_tile()
   return(p)
-}
-
-ggmap_map_frame = function(frame){
-  library(ggmap)
-  europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
-  map = ggmap(europe_map, extent = "device") + 
-    geom_point(data = frame, aes(x = X2, y = X1, colour = 1-X3, alpha = 1-X3), size = 10)+
-    scale_color_gradient(low = "white", high = "red", guide=FALSE) +
-    scale_alpha(range = c(0, 0.03), guide = FALSE)
-  plot(map)
-  return(map)
-}
-
-leaflet_map_frame = function(frame){
-  library(leaflet)
-  m = leaflet() %>% addTiles() %>% addCircles(data = frame, lat = ~ X1, lng = ~ X2, radius = 1, color = "red")
-  return(m)
-}
-
-
-get_months_vector = function(data_list){
-  month = NULL
-  for (i in 1:timestamps){
-    timestamps = dim(data_list$values)[3]
-    time = as.character(data$time)
-    tmp = strsplit(time, "[^0-9]+")
-    monthstamps = NULL
-    for (i in 1:timestamps){
-      monthstamps[i] = as.numeric(tmp[[i]][2])
-    }
-  }
-  return(unique(monthstamps)) 
 }

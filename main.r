@@ -1,7 +1,9 @@
 source("data.r")
+source("plot.r")
 
-data_folder = '\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data'
-images_folder = 'images\\'
+
+data_folder = '//192.168.13.1/share/Dudko/data/ERA-40/data'
+images_folder = 'images/'
 cache_folder = 'cache/'
 files = list.files(data_folder, recursive = F, full.names = F)
 for(filename in files){
@@ -12,6 +14,7 @@ for(filename in files){
     cache_path = paste(cache_folder,"frame_",year,"_",month,".cache",sep="")
     if(!file.exists(cache_path)){
       data = data_tmp
+      data$values = normalize_values(data$values)
       data$summary = get_summary(data,month)
       data$summary = normalize_matrix(data$summary)
       frame = get_map_frame(data)
@@ -28,6 +31,7 @@ for(filename in files){
       png(file=image_path, width=2000,height=1400,res=150)
       plot(map)
       dev.off()
+      rm(map)
       rm(frame)
     }
   }
