@@ -10,7 +10,7 @@ read_nc_file = function(file_path){
   var <- get.var.ncdf(nc,"msl")
   
   result = list(lat=lat, lon=lon, time=dates, values=var)
-  close(file_path)
+  close.ncdf(nc)
   rm(nc)
   return(result)
 }
