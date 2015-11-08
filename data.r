@@ -34,7 +34,7 @@ normalize_matrix = function(matrix){
 }
 
 
-get_summary = function(data_list,month=NULL){
+get_summary = function(data_list, month=NULL){
   timestamps = dim(data_list$values)[3]
   time = as.character(data_list$time)
   tmp = strsplit(time, "[^0-9]+")
@@ -60,16 +60,20 @@ get_summary = function(data_list,month=NULL){
 }
 
 
+
+
+# get_map_frame transforms list with lat,lon and values to frame, which can be
+# used to plot
 get_map_frame = function(data_list){
-  lon_length = dim(data_list$values)[1]
-  lat_length = dim(data_list$values)[2]
+  lon_length = length(data_list$lon)
+  lat_length = length(data_list$lat)
   frame_matrix = matrix(0,lon_length*lat_length,3)
   result_frame = data.frame(lat=integer(),lon=integer(),value=numeric())
   for(i in 1:lat_length){
     for(j in 1:lon_length){
-      frame_matrix[(i-1)*lon_length+j,1] = data_list$lat[i]
-      frame_matrix[(i-1)*lon_length+j,2] = data_list$lon[j]
-      frame_matrix[(i-1)*lon_length+j,3] = data_list$summary[j,i]
+      frame_matrix[(i-1)*lon_length+j,1] = data_list[[1]][i]
+      frame_matrix[(i-1)*lon_length+j,2] = data_list[[2]][j]
+      frame_matrix[(i-1)*lon_length+j,3] = data_list[[3]][j,i]
     }
   }
   result_frame = data.frame(frame_matrix) 

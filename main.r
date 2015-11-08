@@ -13,10 +13,11 @@ for(filename in files){
   for(month in 1:12){
     cache_path = paste(cache_folder,"frame_",year,"_",month,".cache",sep="")
     if(!file.exists(cache_path)){
-      data = data_tmp
       data$values = normalize_values(data$values)
-      data$summary = get_summary(data,month)
+      data$summary = get_summary(data)
       data$summary = normalize_matrix(data$summary)
+      data = list(data$lat,data$lon,data$summary)
+      names(data) =  c("lat","lon","value")
       frame = get_map_frame(data)
       rm(data)
       save(frame, file=cache_path)
