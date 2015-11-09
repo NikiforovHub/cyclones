@@ -1,10 +1,54 @@
-# timestamps = length(data$time)
-# data_tmp = list(lat = data$lat,lon = data$lon, value = data$values[,,1])
-# frame = get_map_frame(data_tmp)
-# map = ggmap_map_frame(frame)
-# plot(map)
-# cycl_centers = map + geom_point(data = min_points, 
-#                        aes(x = X2, y = X1), color = "black", size = 10 )
+R = 6400 # radius of Earth in km
+G = 1.5  # maximum value of average pressure gradient in hPa
+N = 6    # amount of directions on which G is achieved
+images_folder = "images/"
+nIntervLon = 4
+nIntervLat = 3
+
+
+
+centers_list = list()
+timestamps = length(data$time)
+
+year = 1957
+month = 9
+unlink("track_log.csv")
+for (i in 1:timestamps){
+  hour_count = i
+  year = 1957
+  image_path = paste(images_folder, year,"_",month,"_",hour_count, ".png", sep="")  
+  
+  data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
+  data_tmp$values = data_tmp$values/100
+  frame = get_map_frame(data_tmp)
+  map = ggmap_map_frame(frame)
+  matrix = data$values[,,i]
+  min_ind_list = find_loc_mins(matrix, nIntervLon, nIntervLat)
+  min_points = loc_mins(min_ind_list)
+  map_mins = map + geom_point(data = min_points, 
+                              aes(x = lon, y = lat), color = "black", size = 2)
+  print(paste("hour_count",i))
+  cyclon_centers = find_cyclones(data_tmp,min_ind_list,D,G,N)
+  cyclon_centers[,1] = data_tmp$lat[cyclon_centers[,1]]
+  cyclon_centers[,2] = data_tmp$lon[cyclon_centers[,2]]
+  cyclon_centers = as.data.frame(cyclon_centers)
+  if (ncol(cyclon_centers) == 3){
+    names(cyclon_centers) = c("lat","lon","values")
+    map_cyclones = map_mins + geom_point(data = cyclon_centers, 
+                                         aes(x = lon, y = lat), color = "red", size = 2)
+    png(file=image_path, width=2000,height=1400,res=150)
+    plot(map_cyclones)
+    dev.off()
+  }else{
+    png(file=image_path, width=2000,height=1400,res=150)
+    map_mins = map_mins + geom_point(data = tick_mark,
+                           aes(x = lon, y = lat), color = "yellow", size = 5)
+    plot(map_mins)
+    dev.off()
+  }
+  centers_list[[i]] = cyclon_centers
+}
+
 
 ##----------------------------------------##
 
@@ -18,158 +62,3 @@
 # plot(map_mins)
 
 ## ------------------------------------------------------##
-
-R = 6400 # radius of Earth in km
-G = 1.5  # maximum value of average pressure gradient in hPa
-N = 6    # amount of directions on which G is achieved
-
-n = length(min_ind_list)
-data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,1])
-data_tmp$values = data_tmp$values/100
-maxLatInd = length(data_tmp$lat)
-maxLonInd = length(data_tmp$lon)
-cyclon_centers = NULL
-for (i in 1:n){
-  m = nrow(min_ind_list[[i]])
-  for (j in 1:m){ 
-    lat_ind = min_ind_list[[i]][j,2]
-    lon_ind = min_ind_list[[i]][j,1]
-    print(c("lat",data_tmp$lat[lat_ind])) 
-    print(c("lon",data_tmp$lon[lon_ind])) 
-    Ntest = 0
-    grad = NULL
-    
-    ## gradient to north
-    grad = NULL
-    for (k in lat_ind:2){ 
-      theta1 = data_tmp$lat[k-1]
-      theta2 = data_tmp$lat[k]
-      phi1 = data_tmp$lon[lon_ind]
-      phi2 = data_tmp$lon[lon_ind]
-      L = R*acos(sin(theta1)*sin(theta2) + 
-                   cos(theta1)*cos(theta2)*cos(phi1-phi2))
-      grad[k-1] = (data_tmp$value[lon_ind,k]-data_tmp$value[lon_ind,k-1])/L*100
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to south
-    grad = NULL
-    for (k in lat_ind:length(data_tmp$lat)){ 
-      theta1 = data_tmp$lat[k-1]
-      theta2 = data_tmp$lat[k]
-      phi1 = data_tmp$lon[lon_ind]
-      phi2 = data_tmp$lon[lon_ind]
-      L = R*acos(sin(theta1)*sin(theta2) + 
-                   cos(theta1)*cos(theta2)*cos(phi1-phi2))
-      grad[k] = (data_tmp$value[lon_ind,k]-data_tmp$value[lon_ind,k-1])/L*100
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to west
-    grad = NULL
-    for (k in lon_ind:2){ 
-      theta1 = data_tmp$lat[lat_ind]
-      theta2 = data_tmp$lat[lat_ind]
-      phi1 = data_tmp$lon[k-1]
-      phi2 = data_tmp$lon[k]
-      L = R*acos(sin(theta1)*sin(theta2) + 
-                   cos(theta1)*cos(theta2)*cos(phi1-phi2))
-      grad[k-1] = (data_tmp$value[k,lat_ind]-data_tmp$value[k-1,lat_ind])/L*100
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to east
-    grad = NULL
-    for (k in lat_ind:2){ 
-      theta1 = data_tmp$lat[lat_ind]
-      theta2 = data_tmp$lat[lat_ind]
-      phi1 = data_tmp$lon[k-1]
-      phi2 = data_tmp$lon[k]
-      L = R*acos(sin(theta1)*sin(theta2) + 
-                   cos(theta1)*cos(theta2)*cos(phi1-phi2))
-      grad[k-1] = (data_tmp$value[k,lat_ind]-data_tmp$value[k-1,lat_ind])/L*100
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to north-west
-    grad = NULL
-    for (k in lat_ind:2){
-      for (l in lon_ind:2){
-        theta1 = data_tmp$lat[k-1]
-        theta2 = data_tmp$lat[k]
-        phi1 = data_tmp$lon[l-1]
-        phi2 = data_tmp$lon[l]
-        L = R*acos(sin(theta1)*sin(theta2) + 
-                     cos(theta1)*cos(theta2)*cos(phi1-phi2))
-        if (k == l){
-          grad[k] = (data_tmp$value[l,k]-data_tmp$value[l-1,k-1])/L*100
-        }
-      }
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to north-east
-    grad = NULL
-    for (k in lat_ind:2){
-      for (l in lon_ind:length(data_tmp$lon)){
-        theta1 = data_tmp$lat[k-1]
-        theta2 = data_tmp$lat[k]
-        phi1 = data_tmp$lon[l-1]
-        phi2 = data_tmp$lon[l]
-        L = R*acos(sin(theta1)*sin(theta2) + 
-                     cos(theta1)*cos(theta2)*cos(phi1-phi2))
-        if (k == l){
-          grad[k-1] = (data_tmp$value[l,k]-data_tmp$value[l-1,k-1])/L*100
-        }
-      }
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to south-east
-    grad = NULL
-    for (k in lat_ind:length(data_tmp$lat)){
-      for (l in lon_ind:length(data_tmp$lon)){
-        theta1 = data_tmp$lat[k-1]
-        theta2 = data_tmp$lat[k]
-        phi1 = data_tmp$lon[l-1]
-        phi2 = data_tmp$lon[l]
-        L = R*acos(sin(theta1)*sin(theta2) + 
-                     cos(theta1)*cos(theta2)*cos(phi1-phi2))
-        if (k == l){
-          grad[k] = (data_tmp$value[l,k]-data_tmp$value[l-1,k-1])/L*100
-        }
-      }
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    ## gradient to south-west
-    grad = NULL
-    for (k in lat_ind:length(data_tmp$lat)){
-      for (l in lon_ind:2){
-        theta1 = data_tmp$lat[k-1]
-        theta2 = data_tmp$lat[k]
-        phi1 = data_tmp$lon[l-1]
-        phi2 = data_tmp$lon[l]
-        L = R*acos(sin(theta1)*sin(theta2) + 
-                     cos(theta1)*cos(theta2)*cos(phi1-phi2))
-        if (k == l){
-          grad[k] = (data_tmp$value[l,k]-data_tmp$value[l-1,k-1])/L*100
-        }
-      }
-    }
-    print(max(grad, na.rm=TRUE))
-    if (max(grad, na.rm=TRUE) > G) Ntest = Ntest + 1
-    
-    if (Ntest > N) {
-      tmp = c(lat_ind,lon_ind,1)
-      cyclon_centers = rbind(cyclon_centers,tmp,deparse.level = 0)
-    } 
-  }
-}
