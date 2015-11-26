@@ -1,64 +1,83 @@
+library(ggmap)
+library(lubridate)
+
+source("data.r")
+source("plot.r")
+source("find_cyclones_data.r")
+
+
 R = 6400 # radius of Earth in km
-G = 1.5  # maximum value of average pressure gradient in hPa
+##------------------------------------------##
+
+G = 1.5  # maximum value of average pressure gradient in hPa/100 km
+Lmin = 50 # minimum distance between neighbour points
 N = 6    # amount of directions on which G is achieved
-images_folder = "images/"
-nIntervLon = 4
-nIntervLat = 3
+D = 1000 # distance of cyclone in km
 
 
-
+nIntervLon = 8
+nIntervLat = 6
+data_folder = "I:\\ERA-40\\ERA-40\\data"
+images_folder = "imgtmp/"
+files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
 centers_list = list()
+unlink("track_log.csv")
+
 timestamps = length(data$time)
 
-year = 1957
-month = 9
-unlink("track_log.csv")
-for (i in 1:timestamps){
-  hour_count = i
-  year = 1957
-  image_path = paste(images_folder, year,"_",month,"_",hour_count, ".png", sep="")  
+for (i in 20:timestamps){
+  year = year(data$time[i])
+  month = month(data$time[i])
+  day = day(data$time[i])
+  hour = hour(data$time[i])
+  image_path = paste(images_folder, year,"_",month,"_",day,"_",hour, ".png", sep="")
   
   data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
   data_tmp$values = data_tmp$values/100
   frame = get_map_frame(data_tmp)
   map = ggmap_map_frame(frame)
   matrix = data$values[,,i]
-  min_ind_list = find_loc_mins(matrix, nIntervLon, nIntervLat)
-  min_points = loc_mins(min_ind_list)
+  min_list = find_loc_mins(matrix, data_tmp, nIntervLon, nIntervLat)
+  min_points = min_list_to_frame(min_list)
   map_mins = map + geom_point(data = min_points, 
                               aes(x = lon, y = lat), color = "black", size = 2)
+  centers_prob = find_possible_centers(min_list)
+  map_probs = map_mins + geom_point(data = centers_prob, 
+                                    aes(x = lon, y = lat), color = "green", size = 2)
   print(paste("hour_count",i))
-  cyclon_centers = find_cyclones(data_tmp,min_ind_list,D,G,N)
-  cyclon_centers[,1] = data_tmp$lat[cyclon_centers[,1]]
-  cyclon_centers[,2] = data_tmp$lon[cyclon_centers[,2]]
-  cyclon_centers = as.data.frame(cyclon_centers)
-  if (ncol(cyclon_centers) == 3){
-    names(cyclon_centers) = c("lat","lon","values")
-    map_cyclones = map_mins + geom_point(data = cyclon_centers, 
-                                         aes(x = lon, y = lat), color = "red", size = 2)
-    png(file=image_path, width=2000,height=1400,res=150)
-    plot(map_cyclones)
-    dev.off()
-  }else{
-    png(file=image_path, width=2000,height=1400,res=150)
-    map_mins = map_mins + geom_point(data = tick_mark,
-                           aes(x = lon, y = lat), color = "yellow", size = 5)
-    plot(map_mins)
-    dev.off()
-  }
-  centers_list[[i]] = cyclon_centers
+  cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
+  closest_isobars = find_closest_isobars(data_tmp, cyclone_centers)
+  closest_isobars_frame = get_isobars_frame(closest_isobars, data_tmp)
+  names(frame) = c("lat", "lon", "values")
+  map_final = map + geom_point(data = cyclone_centers, 
+                               aes(x = lon, y = lat), color = "blue", size = 2) +
+    stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+  png(file=image_path, width=2000,height=1400,res=150)
+  plot(map_final)
+  dev.off()
+  
+  
+  
+#   if (length(cyclone_centers)){
+#     if (length(closest_isobars_frame) == 0){
+#       map_final = map + geom_point(data = cyclone_centers, 
+#                                    aes(x = lon, y = lat), color = "blue", size = 2) +
+#         stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+#     }else{
+#       map_final = map + geom_point(data = cyclone_centers, 
+#                                    aes(x = lon, y = lat), color = "blue", size = 2) +
+#         stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2) +
+#         geom_point(data = closest_isobars_frame, aes(x = lon, y = lat), color = "blue", size = 1)
+#     }
+#     png(file=image_path, width=2000,height=1400,res=150)
+#     plot(map_final)
+#     dev.off()
+#   }else{
+#     map_final = map + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+#     png(file=image_path, width=2000,height=1400,res=150)
+#     plot(map_final)
+#     dev.off()
+#   }
 }
 
 
-##----------------------------------------##
-
-# nIntervLon = 4
-# nIntervLat = 3
-# matrix = data$values[,,1]
-# min_ind_list = find_loc_mins(matrix, nIntervLon, nIntervLat)
-# min_points = loc_mins(min_ind_list)
-# map_mins = map + geom_point(data = min_points, 
-#                             aes(x = lon, y = lat), color = "black", size = 2)
-# plot(map_mins)
-
-## ------------------------------------------------------##

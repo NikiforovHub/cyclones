@@ -1,6 +1,31 @@
 source("data.r")
 source("plot.r")
 
+data_folder = 'D:/ERA-40/sample'
+images_folder = 'images/'
+files = list.files(data_folder, recursive = F, full.names = F)
+for(filename in files){
+  data_filename = paste(data_folder,filename, sep='/')
+  year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
+  cache_filename = paste("frame_",year,".cache",sep="")
+  if(!file.exists(cache_filename)){
+    data = read_nc_file(data_filename)
+    data$summary = get_summary(data)
+    data$summary = normalize_matrix(data$summary)
+    frame = get_map_frame(data)
+    rm(data)
+    save(frame, file=cache_filename)
+  }else{
+    load(cache_filename)
+  }
+  # frame$X3 = round(frame$X3*100)
+  map = ggmap_map_frame(frame)
+  # pressure_plot = ggplot_map_frame(frame)
+  # png(file=paste(images_folder, year, ".png", sep=""), width=2000,height=1400,res=150)
+  plot(map)
+  # dev.off()
+  rm(frame)
+}
 
 data_folder = '//192.168.13.1/share/Dudko/data/ERA-40/data'
 images_folder = 'images/'
