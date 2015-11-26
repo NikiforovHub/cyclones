@@ -1,21 +1,27 @@
+# These functions needed for finding centers of cyclones, closest isobars of these cyclones
+# ----------------------------------------------------------- #
+# ----------------------------------------------------------- #
+
 find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
-  n = nrow(centers_prob)
+  nCenters = nrow(centers_prob)
   maxLatInd = length(data_tmp$lat)
   maxLonInd = length(data_tmp$lon)
   cyclone_centers = NULL
-  track = NULL
-  for (i in 1:n){
-    lat_ind = centers_prob$lat_ind[i]
-    lon_ind = centers_prob$lon_ind[i]
-    track_line = c(data_tmp$lat[lat_ind],data_tmp$lon[lon_ind])
+  track = NULL # creating track object for gradient maximums
+  grad_track = list() # creating track list for gradient
+  for (i in 1:nCenters){
+    center_lat_ind = centers_prob$lat_ind[i]
+    center_lon_ind = centers_prob$lon_ind[i]
+    track_line = c(data_tmp$lat[center_lat_ind],data_tmp$lon[center_lon_ind])
     Ntest = 0
-    
-    ## gradient
+    grad_tmp = list()
+    ## computating gradient in 8 directions 
     for(p1 in c(-1,0,1)){
-      for(p2 in c(-1,0,1)){ # order: SW, W, NW, S, N, SE, E,  NE
+      # order of directions: SW, W, NW, S, N, SE, E,  NE
+      for(p2 in c(-1,0,1)){
         if((p1 == 0) & (p2 == 0)) next
-        k=lat_ind
-        l=lon_ind
+        k=center_lat_ind
+        l=center_lon_ind
         grad = NULL
         grad_count = 1
         d = 1
@@ -24,6 +30,9 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
               (l + p2*d >= 1) & (l + p2*d <= maxLonInd)){
           d = 1
           repeat{
+            # Calculating distance between two points
+            # https://ru.wikipedia.org/wiki/%D0%A1%D1%84%D0%B5%D1%80%D0%B0 
+            # "Расстояние между двумя точками на сфере"
             theta1 = data_tmp$lat[k + p1*d]
             theta2 = data_tmp$lat[k]
             phi1 = data_tmp$lon[l + p2*d]
@@ -49,17 +58,23 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
         }
         track_line = c(track_line, max(grad, na.rm=TRUE))
         if ((max(grad, na.rm=TRUE) > G) | (max(grad, na.rm=TRUE) == -Inf)) Ntest = Ntest + 1
+#        if (is.null(grad))  grad_tmp = c(grad_tmp,"NULL")
+        grad = list(grad)
+        grad_tmp = c(grad_tmp,grad)
       } 
     }
+    names(grad_tmp) = c("SW", "W", "NW", "S", "N", "SE", "E", "NE")
+    grad_tmp = list(grad_tmp)
+    grad_track = c(grad_track, grad_tmp)
     track = rbind(track,track_line,deparse.level = 0)
     if (Ntest >= N) {
-      lat = data_tmp$lat[lat_ind]
-      lon = data_tmp$lon[lon_ind]
-      cyclone_center = c(lat, lon, lat_ind,lon_ind,1)
+      center_lat = data_tmp$lat[center_lat_ind]
+      center_lon = data_tmp$lon[center_lon_ind]
+      cyclone_center = c(center_lat, center_lon, center_lat_ind,center_lon_ind,1)
       cyclone_centers = rbind(cyclone_centers,cyclone_center,deparse.level = 0)
     }
   }
-  colnames(track) = c("lat","lon","N","S","W","E","NW","NE","SE","SW")
+  colnames(track) = c("lat","lon","SW", "W", "NW", "S", "N", "SE", "E", "NE")
   track_t = t(track)
   print(track_t,digits = 2)
   fileConn = file("track_log.csv")
@@ -69,6 +84,16 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
   write.table(a, file = "track_log.csv", 
               append = TRUE, sep = " ", quote = FALSE)
   close(fileConn)
+  
+#   fileConn = file("grad_track.data")
+#   write.table(format(grad_tmp, digits=2), file = "grad_track.data", 
+#               append = TRUE, sep='\t',quote = FALSE)
+#   a = paste("timestamp")
+#   write.table(a, file = "grad_track.data", 
+#               append = TRUE, sep = " ", quote = FALSE)
+#   close(fileConn)
+  save(grad_track, file = "grad_track.data")
+  
   cyclone_centers = as.data.frame(cyclone_centers)
   if(length(cyclone_centers)){
     names(cyclone_centers) = c("lat","lon", "lat_ind", "lon_ind", "values")
@@ -77,16 +102,11 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
 }
 
 
-
-
-
-
 find_loc_mins = function(matrix, data_with_latlon, nIntervLon, nIntervLat){
-  maxlon = nrow(matrix)
-  maxlat = ncol(matrix)
-  intervLon = ceiling(maxlon/nIntervLon)
-  intervLat = ceiling(maxlat/nIntervLat)
-  #min_points = matrix(NA,nIntervLon,nIntervLat)
+  maxLonInd = nrow(matrix)
+  maxLatInd = ncol(matrix)
+  intervLon = ceiling(maxLonInd/nIntervLon)
+  intervLat = ceiling(maxLatInd/nIntervLat)
   min_ind_list = list()
   matrix_mins = matrix(NA, nIntervLon, nIntervLat)
   matrix_lat =  matrix(NA, nIntervLon, nIntervLat)
@@ -97,24 +117,23 @@ find_loc_mins = function(matrix, data_with_latlon, nIntervLon, nIntervLat){
     for (j in 1:nIntervLat){
       nlon = intervLon*i
       nlat = intervLat*j
-      if ((nlon <= maxlon) & (nlat <= maxlat)) {
+      if ((nlon <= maxLonInd) & (nlat <= maxLatInd)) {
         m = matrix[(intervLon*(i-1)+1):(intervLon*i),
                    (intervLat*(j-1)+1):(intervLat*j)]
-      }else if ((nlon <= maxlon) & (nlat > maxlat)) {
+      }else if ((nlon <= maxLonInd) & (nlat > maxLatInd)) {
         m = matrix[(intervLon*(i-1)+1):(intervLon*i),
-                   (intervLat*(j-1)+1): maxlat      ]
-      }else if ((nlon  > maxlon) & (nlat <= maxlat)){
-        m = matrix[(intervLon*(i-1)+1): maxlon,
+                   (intervLat*(j-1)+1): maxLatInd      ]
+      }else if ((nlon  > maxLonInd) & (nlat <= maxLatInd)){
+        m = matrix[(intervLon*(i-1)+1): maxLonInd,
                    (intervLat*(j-1)+1):(intervLat*j)]
-      }else if ((nlon  > maxlon) & (nlat > maxlat)){
-        m = matrix[(intervLon*(i-1)+1):maxlon,
-                   (intervLat*(j-1)+1):maxlat]
+      }else if ((nlon  > maxLonInd) & (nlat > maxLatInd)){
+        m = matrix[(intervLon*(i-1)+1):maxLonInd,
+                   (intervLat*(j-1)+1):maxLatInd]
       }
         min_ind = NULL
         min_ind = which(m == min(m), arr.ind = TRUE)
         min_ind[,1] = min_ind[,1] + intervLon*(i-1)
         min_ind[,2] = min_ind[,2] + intervLat*(j-1)
-#         min_ind_list[[(j-1)*nIntervLon+i]] = min_ind
         matrix_mins[i, j] = min(m)
         lat_ind = min_ind[1,2]
         lat = data$lat[lat_ind]
@@ -128,7 +147,6 @@ find_loc_mins = function(matrix, data_with_latlon, nIntervLon, nIntervLat){
   }
   min_list = list(values = matrix_mins, lat = matrix_lat, lon = matrix_lon,
                   lat_ind = matrix_lat_ind, lon_ind = matrix_lon_ind)
-  #return(min_ind_list)
   return(min_list)
 }
 
@@ -188,6 +206,7 @@ find_possible_centers = function(min_list){
              values = min_list$values[matrix_bool])
   return(possible_centers)
 }
+
 
 find_closest_isobars = function(data_tmp, cyclone_centers){
   closest_isobars = list()
@@ -266,6 +285,7 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
   return(closest_isobars)
 }
 
+
 get_isobars_frame = function(closest_isobars, data_tmp){
   closest_isobars_frame = data.frame()
   l = length(closest_isobars)
@@ -282,6 +302,9 @@ get_isobars_frame = function(closest_isobars, data_tmp){
   return(closest_isobars_frame)
 }
 
+
+# select a contour, that assigned to exact cyclone with center_lon_ind and check_lat_ind, from couple of contours
+# couple of contours creates by R function contourLines
 find_contour = function(contours, center_lon_ind, check_lat_ind){
   l = length(contours)
   contour = NULL
@@ -318,6 +341,8 @@ find_contour = function(contours, center_lon_ind, check_lat_ind){
   return(contour)
 }
 
+
+# check if contour closed or not
 is_closed = function(contour, maxLonInd, maxLatInd){
   lx = length(contour[[1]]$x)
   ly = length(contour[[1]]$y)

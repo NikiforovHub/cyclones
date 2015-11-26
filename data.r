@@ -1,3 +1,9 @@
+# These functions needed for working with data form .nc files
+# ----------------------------------------------------------- #
+# ----------------------------------------------------------- #
+
+
+
 read_nc_file = function(file_path){
   library(ncdf)
   nc <- open.ncdf(file_path)
