@@ -2,6 +2,7 @@
 ### My Own
 ##########################
 data/**
+cache/**
 images/**
 imgtmp/**
 track_log.csv
