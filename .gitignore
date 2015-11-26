@@ -5,10 +5,11 @@ data/**
 cache/**
 images/**
 imgtmp/**
-track_log.csv
 other/**
 .Rdata
 .Rhistory
+track_log.csv
+
 
 #################
 ## Eclipse
