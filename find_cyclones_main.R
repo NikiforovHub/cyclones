@@ -1,6 +1,7 @@
 # install.packages("lubridate")
 
 library(ggmap)
+library(lubridate)
 
 source("data.r")
 source("plot.r")
@@ -8,7 +9,7 @@ source("find_cyclones_data.r")
 
 
 
-find_cyclones_main = function(){
+
   R = 6400 # radius of Earth in km
   ##------------------------------------------##
   
@@ -20,7 +21,8 @@ find_cyclones_main = function(){
   
   nIntervLon = 8
   nIntervLat = 6
-  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+#  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+  data_folder = "I:\\ERA-40\\ERA-40\\data"
   images_folder = "images/"
   files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
   centers_list = list()
@@ -51,7 +53,7 @@ find_cyclones_main = function(){
         map_probs = map_mins + geom_point(data = centers_prob, 
                                           aes(x = lon, y = lat), color = "green", size = 2)
         print(paste("hour_count",i))
-        cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N)
+        cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
         closest_isobars = find_closest_isobars(data_tmp, cyclone_centers)
         closest_isobars_frame = get_isobars_frame(closest_isobars, data_tmp)
         names(frame) = c("lat", "lon", "values")
@@ -79,6 +81,5 @@ find_cyclones_main = function(){
       }
     }
   }
-  
-}
+
 

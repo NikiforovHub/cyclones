@@ -17,13 +17,14 @@ D = 1000 # distance of cyclone in km
 
 nIntervLon = 8
 nIntervLat = 6
-data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+# data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+data_folder = "C:/R/cyclones/data/data"
 images_folder = "images/graphs/"
 # files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
 files = c("netcdf_1957.nc")
 centers_list = list()
-unlink("track_log.csv")
-unlink("grad_track.data")
+# unlink("track_log.csv")
+# unlink("grad_track.data")
 
 for(filename in files){
   data_filename = paste(data_folder,filename, sep='/')
@@ -47,6 +48,7 @@ for(filename in files){
       print(paste("hour_count",i))
       cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
       names(frame) = c("lat", "lon", "values")
+      values_data <- get_values_data(data_tmp, cyclone_centers)
     }
   }
 }
