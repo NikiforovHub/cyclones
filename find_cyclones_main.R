@@ -27,6 +27,7 @@ source("find_cyclones_data.r")
   files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
   centers_list = list()
   unlink("track_log.csv")
+  europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
   
   for(filename in files){
     data_filename = paste(data_folder,filename, sep='/')
@@ -43,7 +44,7 @@ source("find_cyclones_data.r")
         data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
         data_tmp$values = data_tmp$values/100
         frame = get_map_frame(data_tmp)
-        map = ggmap_map_frame(frame)
+        map = ggmap_map_frame(frame,europe_map)
         matrix = data$values[,,i]
         min_list = find_loc_mins(matrix, data_tmp, nIntervLon, nIntervLat)
         min_points = min_list_to_frame(min_list)

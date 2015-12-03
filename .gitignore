@@ -4,7 +4,9 @@
 data/**
 cache/**
 images/**
+images_ver_1.0/**
 imgtmp/**
+graphs/**
 other/**
 .Rdata
 .Rhistory

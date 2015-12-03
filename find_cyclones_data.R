@@ -17,7 +17,7 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
     grad_tmp = list()
     ## computating gradient in 8 directions 
     for(p1 in c(-1,0,1)){
-      # order of directions: SW, W, NW, S, N, SE, E,  NE
+      # order of directions: NW,N,NE, W,E, SW,S,SE
       for(p2 in c(-1,0,1)){
         if((p1 == 0) & (p2 == 0)) next
         k=center_lat_ind
@@ -63,7 +63,7 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
         grad_tmp = c(grad_tmp,grad)
       } 
     }
-    names(grad_tmp) = c("SW", "W", "NW", "S", "N", "SE", "E", "NE")
+    names(grad_tmp) = c("NW","N","NE","W","E","SW","S","SE")
     grad_tmp = list(grad_tmp)
     grad_track = c(grad_track, grad_tmp)
     track = rbind(track,track_line,deparse.level = 0)
@@ -286,6 +286,51 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
 }
 
 
+find_isobars = function(data_tmp, cyclone_centers){
+  isobars = list()
+  if (length(cyclone_centers)){
+    maxLatInd = length(data_tmp$lat)
+    maxLonInd = length(data_tmp$lon)
+    for (i in 1:nrow(cyclone_centers)){
+      center_lat_ind = cyclone_centers$lat_ind[i]
+      center_lon_ind = cyclone_centers$lon_ind[i]
+      if ((center_lat_ind - 1) >= (maxLatInd - center_lat_ind)){
+        farthest_lat_edge = 1
+        stepLat = -1
+      }else{
+        farthest_lat_edge = maxLatInd
+        stepLat = 1
+      } 
+      if ((center_lon_ind - 1) >= (maxLonInd - center_lon_ind)){
+        farthest_lon_edge = 1
+        stepLon = -1
+      }else{
+        farthest_lon_edge = maxLonInd
+        stepLon = 1
+      }
+      k = center_lat_ind
+      level_found = FALSE
+      while((k >= 1) & (k <= maxLatInd) & (k + stepLat >= 1) & (k + stepLat <= maxLatInd)){
+        grad = data_tmp$values[center_lon_ind,k + stepLat] - data_tmp$values[center_lon_ind,k]
+        if (grad < 0){
+          level_found = TRUE
+          level = data_tmp$values[center_lon_ind,k]
+          break
+        }
+        k = k + stepLat
+      }
+      if (level_found){
+        contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
+                                z = data_tmp$values, level = level)
+        contour = find_contour(contours, center_lon_ind, k)
+        isobars = c(isobars, contour)
+      } 
+    }
+  }
+  return(isobars)
+}
+
+
 get_isobars_frame = function(closest_isobars, data_tmp){
   closest_isobars_frame = data.frame()
   l = length(closest_isobars)
@@ -361,9 +406,9 @@ get_values_data = function(data_tmp,cyclone_centers,date){
   for (i in 1:nCenters){
     center_lat_ind = cyclone_centers$lat_ind[i]
     center_lon_ind = cyclone_centers$lon_ind[i]
+    values_lines = list()
     values_lines_count = 0
     for(p1 in c(-1,0,1)){
-      values_lines = list()
       for(p2 in c(-1,0,1)){
         values_count = 1
         if((p1 == 0) & (p2 == 0)) next
@@ -384,7 +429,7 @@ get_values_data = function(data_tmp,cyclone_centers,date){
                                     center_lon_ind = center_lon_ind,
                                     center_lat = cyclone_centers$lat[i],
                                     center_lon = cyclone_centers$lon[i])
-    names(values_lines) = c("SW", "W", "NW", "S", "N", "SE", "E", "NE")
+    names(values_lines) = c("NW","N","NE","W","E","SW","S","SE")
     values_data[[values_data_count]] = values_lines
     values_data_count = values_data_count + 1
   }
