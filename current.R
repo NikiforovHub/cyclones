@@ -9,12 +9,14 @@ source("find_cyclones_data.r")
 R = 6400 # radius of Earth in km
 ##------------------------------------------##
 
-G = 1.5  # maximum value of average pressure gradient in hPa/100 km
+G = 1.5  # maximum value of average gradient pressure  in hPa/100 km
 Lmin = 50 # minimum distance between neighbour points
 N = 6    # amount of directions on which G is achieved
 D = 1000 # distance of cyclone in km
 
 
+
+grad_limit = 1    # limit value of gradient pressure for finding isobars in hPa/100 km
 nIntervLon = 8
 nIntervLat = 6
 data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
@@ -35,7 +37,7 @@ for(filename in files){
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   data = read_nc_file(data_filename)
   timestamps = length(data$time)
-  for (i in 1:20){
+  for (i in 2:2){
     year = year(data$time[i])
     month = month(data$time[i])
     day = day(data$time[i])
@@ -56,7 +58,7 @@ for(filename in files){
                                         aes(x = lon, y = lat), color = "green", size = 2)
       print(paste("hour_count",i))
       cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
-      isobars = find_isobars(data_tmp, cyclone_centers)
+      isobars = find_isobars(data_tmp, cyclone_centers, grad_limit)
       isobars_frame = get_isobars_frame(isobars, data_tmp)
       names(frame) = c("lat", "lon", "values")
       

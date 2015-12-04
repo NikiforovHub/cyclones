@@ -2,6 +2,7 @@
 
 library(ggmap)
 library(lubridate)
+library(geosphere)
 
 source("data.r")
 source("plot.r")
