@@ -53,6 +53,15 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
           
           grad[grad_count] = (data_tmp$values[l + p2*d, k + p1*d] - data_tmp$values[l,k])/L*100
           grad_count = grad_count + 1
+          # creating points to calculating Dtest 
+          {lat_center = data_tmp$lat[center_lat_ind]
+          lon_center = data_tmp$lon[center_lon_ind]
+          lat1 = data_tmp$lat[k]
+          lon1 = data_tmp$lon[l]
+          point_center = c(lon_center,lat_center)
+          point1 = c(lon1, lat1)} 
+          Dtest = distCosine(point_center,point1)/1000 # divided by 1000 for conversion from meters to kilometers
+          if (Dtest > D) break
           k = k + p1*d
           l = l + p2*d
         }
@@ -130,20 +139,20 @@ find_loc_mins = function(matrix, data_with_latlon, nIntervLon, nIntervLat){
         m = matrix[(intervLon*(i-1)+1):maxLonInd,
                    (intervLat*(j-1)+1):maxLatInd]
       }
-        min_ind = NULL
-        min_ind = which(m == min(m), arr.ind = TRUE)
-        min_ind[,1] = min_ind[,1] + intervLon*(i-1)
-        min_ind[,2] = min_ind[,2] + intervLat*(j-1)
-        matrix_mins[i, j] = min(m)
-        lat_ind = min_ind[1,2]
-        lat = data$lat[lat_ind]
-        matrix_lat_ind[i,j] = lat_ind
-        matrix_lat[i, j] = lat
-        lon_ind = min_ind[1,1]
-        lon = data$lon[lon_ind]
-        matrix_lon_ind[i,j] = lon_ind
-        matrix_lon[i, j] = lon
-        }
+      min_ind = NULL
+      min_ind = which(m == min(m), arr.ind = TRUE)
+      min_ind[,1] = min_ind[,1] + intervLon*(i-1)
+      min_ind[,2] = min_ind[,2] + intervLat*(j-1)
+      matrix_mins[i, j] = min(m)
+      lat_ind = min_ind[1,2]
+      lat = data_with_latlon$lat[lat_ind]
+      matrix_lat_ind[i,j] = lat_ind
+      matrix_lat[i, j] = lat
+      lon_ind = min_ind[1,1]
+      lon = data_with_latlon$lon[lon_ind]
+      matrix_lon_ind[i,j] = lon_ind
+      matrix_lon[i, j] = lon
+    }
   }
   min_list = list(values = matrix_mins, lat = matrix_lat, lon = matrix_lon,
                   lat_ind = matrix_lat_ind, lon_ind = matrix_lon_ind)
@@ -211,7 +220,7 @@ find_possible_centers = function(min_list){
 find_closest_isobars = function(data_tmp, cyclone_centers){
   closest_isobars = list()
   if (length(cyclone_centers)){
-    step = 40
+    step = 25
     maxLatInd = length(data_tmp$lat)
     maxLonInd = length(data_tmp$lon)
     for (i in 1:nrow(cyclone_centers)){
@@ -498,7 +507,6 @@ get_model_frame = function(matrix, cyclone_centers, grad_limit){
   maxLonInd = length(data_tmp$lon)
   model_frame_total = data.frame()
   for (i in 1:nCenters){
-    model_frame = data.frame()
     center_lat_ind = cyclone_centers$lat_ind[i]
     center_lon_ind = cyclone_centers$lon_ind[i]
     ## collecting pressure values in 8 directions 
@@ -506,6 +514,7 @@ get_model_frame = function(matrix, cyclone_centers, grad_limit){
       # order of directions: NW,N,NE, W,E, SW,S,SE
       for(p2 in c(-1,0,1)){
         if((p1 == 0) & (p2 == 0)) next
+        model_frame = data.frame()
         Lcount = 0
         d = 1
         k1 = center_lat_ind
@@ -533,9 +542,9 @@ get_model_frame = function(matrix, cyclone_centers, grad_limit){
             point2 = c(lon2,lat2)
             Lcenter = distCosine(point_center,point2)/1000 # divided by 1000 for conversion from meters to kilometers
             if (Lcenter >= Lcount*Lmin) break
+            d = d + 1
             if (((k1 + p1*d) < 1) | (k1 + p1*d > maxLatInd) |
                 (l1 + p2*d < 1) | (l1 + p2*d > maxLonInd)) break
-            d = d + 1
           }
           if (is.null(point1) | is.null(point2)) break
           L = distCosine(point1,point2)/1000 # divided by 1000 for conversion from meters to kilometers
@@ -546,12 +555,18 @@ get_model_frame = function(matrix, cyclone_centers, grad_limit){
           frame_line = data.frame(center_p,Lcenter,Delta_p,NA)
           model_frame = rbind.data.frame(model_frame,frame_line)
           if (grad < grad_limit){
-            dmax_row = rep(model_frame[nrow(model_frame),3],nrow(model_frame))
+            dmax_row = rep(model_frame[nrow(model_frame),2],nrow(model_frame))
             model_frame[,4] = dmax_row
             break
           }
           k1 = k2
           l1 = l2
+        }
+        if (nrow(model_frame)){
+          if (is.na(model_frame[nrow(model_frame),4])){
+            dmax_row = rep(model_frame[nrow(model_frame),2],nrow(model_frame))
+            model_frame[,4] = dmax_row
+          }
         }
         model_frame_total = rbind.data.frame(model_frame_total,model_frame)
       }

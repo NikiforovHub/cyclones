@@ -1,54 +1,16 @@
-k1 = 1
-l1 = 1
-k2 = 325
-l2 = 577
+start_plot = 1
+plot_count = 1
+plot_folder = "graphs/plots/"
 
-
-
-theta1 = data_tmp$lat[k1]
-theta2 = data_tmp$lat[k2]
-phi1 = data_tmp$lon[l1]
-phi2 = data_tmp$lon[l2]
-theta1 = theta1/180*pi
-theta2 = theta2/180*pi
-phi1 = phi1/180*pi
-phi2 = phi2/180*pi
-Lmy = R*acos(sin(theta1)*sin(theta2) + 
-              cos(theta1)*cos(theta2)*cos(phi1-phi2))
-
-
-
-
-lat1 = data_tmp$lat[k1]
-lon1 = data_tmp$lon[l1]
-p1 = c(lon1, lat1)
-lat2 = data_tmp$lat[k2]
-lon2 = data_tmp$lon[l2]
-p2 = c(lon2, lat2)
-LCosine = distCosine(p1, p2)/1000
-LHavershine = distHaversine(p1,p2)/1000
-LVincentySphere = distVincentySphere(p1,p2)/1000
-LVincentyEllipsoid = distVincentyEllipsoid(p1,p2)/1000
-LMeeus = distMeeus(p1,p2)/1000
-LGeo = distGeo(p1,p2)/1000
-
-print(c("Lmy",Lmy))
-print(c("Lcosine", LCosine))
-print(c("LHavershine", LHavershine))
-print(c("LVincentySphere", LVincentySphere))
-print(c("LVincentyEllipsoid", LVincentyEllipsoid))
-print(c("LMeeus", LMeeus))
-print(c("LGeo", LGeo))
-print(c("dLmy/LGeo", (Lmy-LGeo)/Lmy*100,"%"))
-
-
-
-
-
-
-
-
-
-
-
-
+for (i in 1:nrow(model_frame_total)){
+  image_path = paste(plot_folder,"plot_",plot_count,".png",sep="")
+  if (model_frame_total$d[i] ==  model_frame_total$dmax[i]){
+    png(file=image_path, width=2000,height=1400,res=150)
+    plot(model_frame_total$Delta_P[start_plot:i], type="l",x = model_frame_total$d[start_plot:i],
+         xlab="Distance", ylab="Pressure difference")
+    lines(model_frame_total$model_predict[start_plot:i], col="red",x = model_frame_total$d[start_plot:i])
+    dev.off()
+    start_plot = i+1
+    plot_count = plot_count + 1
+  }
+}

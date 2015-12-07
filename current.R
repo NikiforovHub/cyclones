@@ -10,9 +10,9 @@ source("find_cyclones_data.r")
 R = 6400 # radius of Earth in km
 ##------------------------------------------##
 
-G = 1.5  # maximum value of average gradient pressure  in hPa/100 km
-Lmin = 50 # minimum distance between neighbour points
-N = 6    # amount of directions on which G is achieved
+G = 1.0  # maximum value of average pressure gradient in hPa/100 km
+Lmin = 50 # minimum distance between neighbour points in km
+N = 5    # amount of directions on which G is achieved
 D = 1000 # distance of cyclone in km
 
 
