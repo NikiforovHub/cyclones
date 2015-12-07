@@ -1,5 +1,6 @@
 library(ggmap)
 library(lubridate)
+library(geosphere)
 
 source("data.r")
 source("plot.r")
@@ -19,8 +20,8 @@ D = 1000 # distance of cyclone in km
 grad_limit = 1    # limit value of gradient pressure for finding isobars in hPa/100 km
 nIntervLon = 8
 nIntervLat = 6
-data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
-# data_folder = "C:/R/cyclones/data/data"
+#data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+data_folder = "C:/R/cyclones/data/data"
 images_folder = "images/"
 graphs_folder = "graphs/"
 # files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
@@ -37,7 +38,7 @@ for(filename in files){
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   data = read_nc_file(data_filename)
   timestamps = length(data$time)
-  for (i in 2:2){
+  for (i in 1:5){
     year = year(data$time[i])
     month = month(data$time[i])
     day = day(data$time[i])
