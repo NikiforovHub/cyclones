@@ -358,7 +358,7 @@ find_isobars = function(data_tmp, cyclone_centers, grad_limit){
               lat2 = data_tmp$lat[k]
               lon2 = data_tmp$lon[l]
               point2 = c(lon2, lat2)
-              distance_to_center[count] = distCosine(point1,point2)
+              distance_to_center[count] = distCosine(point1,point2)/1000
               break
             }
             k = k + p1*d
@@ -366,12 +366,14 @@ find_isobars = function(data_tmp, cyclone_centers, grad_limit){
           }
         } 
       }
-      min_dist_ind = which.min(distance_to_center)
-      isobar_level = level[min_dist_ind]
-      contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
-                              z = data_tmp$values, level = isobar_level)
-      contour = find_contour(contours, level_lon_ind[min_dist_ind], level_lat_ind[min_dist_ind])
-      isobars = c(isobars, contour)
+      if (length(level_found)){
+        for (m in 1:length(level_found)){
+          contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
+                                  z = data_tmp$values, level = level[m])
+          contour = find_contour(contours, level_lon_ind[m], level_lat_ind[m])
+          isobars = c(isobars, contour)
+        }
+      }
     }
   }
   return(isobars)
@@ -500,6 +502,92 @@ get_values_data = function(data_tmp,cyclone_centers,date){
   return(values_data)
 }
 
+
+# get_grad_data returns pressure grad values near cyclone centers in eight directions
+get_grad_data = function(data_tmp,cyclone_centers,date, Lmin){
+  nCenters = nrow(cyclone_centers)
+  maxLatInd = length(data_tmp$lat)
+  maxLonInd = length(data_tmp$lon)
+  grad_data = list()
+  grad_data_count = 1
+  for (i in 1:nCenters){
+    center_lat_ind = cyclone_centers$lat_ind[i]
+    center_lon_ind = cyclone_centers$lon_ind[i]
+    center_lat = data_tmp$lat[center_lat_ind]
+    center_lon = data_tmp$lon[center_lon_ind]
+    point_center = c(center_lon, center_lat)
+    grad_lines = list()
+    grad_lines_count = 0
+    for(p1 in c(-1,0,1)){
+      for(p2 in c(-1,0,1)){
+        plot_count = 1
+        if((p1 == 0) & (p2 == 0)) next
+        grad_lines_count = grad_lines_count + 1
+        k1=center_lat_ind
+        l1=center_lon_ind
+        k2 = NULL
+        l2 = NULL
+        grad = list()
+        grad_x = NULL
+        grad_y = NULL
+        while((k1 >= 1) & (k1 <= maxLatInd) & (l1>=1) & (l1<= maxLonInd) &
+              (k1 + p1 >= 1) & (k1 + p1 <= maxLatInd) & (l1 + p2 >=1) & (l1 + p2 <= maxLonInd)){
+          k2 = NULL
+          l2 = NULL
+          d = 1
+          repeat{
+            k_tmp = k1 + p1*d
+            l_tmp = l1 + p2*d
+            lat1 = data_tmp$lat[k1]
+            lon1 = data_tmp$lon[l1]
+            lat_tmp = data_tmp$lat[k_tmp]
+            lon_tmp = data_tmp$lon[l_tmp]
+            point1 = c(lon1,lat1)
+            point_tmp = c(lon_tmp,lat_tmp)
+            L_tmp = distCosine(point1,point_tmp)/1000 # divided by 1000 for conversion from meters to kilometers
+            if (L_tmp >= Lmin){
+              k2 = k_tmp
+              l2 = l_tmp
+              point2 = point_tmp
+              L = L_tmp
+              break
+            }
+            d = d + 1
+            if (((k1 + p1*d) < 1) | (k1 + p1*d > maxLatInd) |
+                (l1 + p2*d < 1) | (l1 + p2*d > maxLonInd)) break
+          }
+          if (!is.null(k2)){
+            Lcenter = distCosine(point2, point_center)/1000 # divided by 1000 for conversion from meters to kilometers
+            grad_x[plot_count] = Lcenter
+            grad_y[plot_count] = (data_tmp$values[l2,k2] - data_tmp$values[l1,k1])/L*100
+            plot_count = plot_count + 1
+            k1 = k2
+            l1 = l2
+          }else{
+            k1 = k_tmp
+            l1 = l_tmp
+          }
+        }
+        if (is.null(grad_x)){
+          grad_x = 1000
+          grad_y = 1000
+        } 
+        grad = list(grad_x, grad_y)
+        names(grad) = c("x","y")
+        grad_lines[[grad_lines_count]] = grad
+      }
+    }
+    attributes(grad_lines) = list(date = date,
+                                  center_lat_ind = center_lat_ind, 
+                                  center_lon_ind = center_lon_ind,
+                                  center_lat = cyclone_centers$lat[i],
+                                  center_lon = cyclone_centers$lon[i])
+    names(grad_lines) = c("NW","N","NE","W","E","SW","S","SE")
+    grad_data[[grad_data_count]] = grad_lines
+    grad_data_count = grad_data_count + 1
+  }
+  return(grad_data)
+}
 
 get_model_frame = function(matrix, cyclone_centers, grad_limit){
   nCenters = nrow(cyclone_centers)

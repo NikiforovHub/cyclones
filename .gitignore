@@ -5,8 +5,10 @@ data/**
 cache/**
 images/**
 images_ver_1.0/**
+images_для отчёта/**
 imgtmp/**
 graphs/**
+graphs_ver_1.0/**
 other/**
 .Rdata
 .Rhistory
