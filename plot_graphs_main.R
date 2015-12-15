@@ -21,10 +21,11 @@ D = 1000 # distance of cyclone in km
 grad_limit = 0.3    # limit value of gradient pressure for finding isobars in hPa/100 km
 nIntervLon = 8
 nIntervLat = 6
-data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
-#data_folder = "C:/R/cyclones/data/data"
+# data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+data_folder = "C:/R/cyclones/data/data"
 images_folder = "images/"
-graphs_folder = "graphs/gradients/"
+graphs_folder = "graphs/"
+gradients_folder =  "graphs/gradients/"
 # files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
 files = c("netcdf_1957.nc")
 centers_list = list()
@@ -54,7 +55,7 @@ for(filename in files){
     print(paste("hour_count",i))
     cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
     date = c(year = year, month = month, day = day, hour = hour)
-    #values_data[[i]] = get_values_data(data_tmp, cyclone_centers, date)
+#     values_data[[i]] = get_values_data(data_tmp, cyclone_centers, date)
 #     for (cyclone_number in 1:length(values_data[[i]])){
 #       for (j in 1:8){
 #         direction = names(values_data[[i]][[cyclone_number]][j])
@@ -74,13 +75,13 @@ for(filename in files){
     for (cyclone_number in 1:length(grad_data[[i]])){
       for (j in 1:8){
         direction = names(grad_data[[i]][[cyclone_number]][j])
-        graph_name = paste(year,month,day,hour,"cyclone",i,"direction",direction,sep="_")
-        graph_path = paste(graphs_folder,graph_name,".png",sep="")
-        if (!file.exists(graph_path)){
-          png(file=graph_path, width=2000,height=1400,res=150)
+        grad_name = paste(year,month,day,hour,"cyclone",i,"direction",direction,sep="_")
+        gradients_path = paste(gradients_folder,grad_name,".png",sep="")
+        if (!file.exists(gradients_path)){
+          png(file=gradients_path, width=2000,height=1400,res=150)
           plot(x = grad_data[[i]][[cyclone_number]][[j]]$x, 
                y = grad_data[[i]][[cyclone_number]][[j]]$y,
-               type = "b", xlim = c(0,3500))
+               type = "b", xlim = c(0,3500), ylim = c(-3.5,3.5), lab = c(20,20,7))
           dev.off()
         }
       }

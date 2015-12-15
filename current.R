@@ -7,8 +7,8 @@ source("plot.r")
 source("find_cyclones_data.r")
 
 
-data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
-#data_folder = "C:/R/cyclones/data/data"
+# data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+data_folder = "C:/R/cyclones/data/data"
 images_folder = "images/"
 graphs_folder = "graphs/"
 # files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
@@ -41,7 +41,7 @@ for(filename in files){
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   data = read_nc_file(data_filename)
   timestamps = length(data$time)
-  for (i in 6:20){
+  for (i in 1:20){
     year = year(data$time[i])
     month = month(data$time[i])
     day = day(data$time[i])
@@ -66,26 +66,77 @@ for(filename in files){
       isobars_frame = get_isobars_frame(isobars, data_tmp)
       names(frame) = c("lat", "lon", "values")
       
+      map_final = map
       if (length(cyclone_centers)){
+        for (k in 1:nrow(cyclone_centers)){
+          c1 = k %% 2
+          c2 = ((k - c1)%%4)/2
+          c3 = ((k - c1 - c2*2)%%8)/4
+          if (k%%8 == 0){
+            c1 = 1
+            c2 = 1
+            c3 = 0
+          }
+          center_color = rgb(c1,c2,c3)
+          map_final = map_final + geom_point(data = cyclone_centers[k,], 
+                                             aes(x = lon, y = lat), color = center_color, size = 2)
+          
+        }
         if (length(isobars_frame) == 0){
-          map_final = map + geom_point(data = cyclone_centers, 
-                                       aes(x = lon, y = lat), color = "blue", size = 2) +
+          map_final = map_final +
             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
         }else{
-          map_final = map + geom_point(data = cyclone_centers, 
-                                       aes(x = lon, y = lat), color = "blue", size = 2) +
-            stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2) +
-            geom_point(data = isobars_frame, aes(x = lon, y = lat), color = "blue", size = 1)
+          for (k in 1:nrow(cyclone_centers)){
+            for (j in 1:8){
+              isobars_frame = get_isobars_frame(list(isobars[[(k-1)*8 + j]]), data_tmp)
+              c1 = k %% 2
+              c2 = ((k - c1)%%4)/2
+              c3 = ((k - c1 - c2*2)%%8)/4
+              if (k%%8 == 0){
+                c1 = 1
+                c2 = 1
+                c3 = 0
+              }
+              len_is = length(isobars)
+              p = 13
+              isobar_color = rgb(c1*(j+(p-8))/p,c2*(j+(p-8))/p,c3*(j+(p-8))/p)
+              map_final = map_final + geom_point(data = isobars_frame, aes(x = lon, y = lat),
+                                                 color = isobar_color, size = 1)
+            }
+          }
+          map_final = map_final + 
+            stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
         }
-        png(file=image_path, width=2000,height=1400,res=150)
-        plot(map_final)
-        dev.off()
+        
       }else{
-        map_final = map + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
-        png(file=image_path, width=2000,height=1400,res=150)
-        plot(map_final)
-        dev.off()
+        map_final = map_final + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
       }
+      
+      png(file=image_path, width=2000,height=1400,res=150)
+      plot(map_final)
+      dev.off()
+      
+#       if (length(cyclone_centers)){
+#         if (length(isobars_frame) == 0){
+#           map_final = map + geom_point(data = cyclone_centers, 
+#                                        aes(x = lon, y = lat), color = "blue", size = 2) +
+#             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+#         }else{
+#           map_final = map + geom_point(data = cyclone_centers, 
+#                                        aes(x = lon, y = lat), color = "blue", size = 2) +
+#             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2) +
+#             geom_point(data = isobars_frame, aes(x = lon, y = lat), color = "blue", size = 1)
+#         }
+#         png(file=image_path, width=2000,height=1400,res=150)
+#         plot(map_final)
+#         dev.off()
+#       }else{
+#         map_final = map + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+#         png(file=image_path, width=2000,height=1400,res=150)
+#         plot(map_final)
+#         dev.off()
+#       }
     }
   }
 }
+
