@@ -1,5 +1,3 @@
-# install.packages("lubridate")
-
 library(ggmap)
 library(lubridate)
 library(geosphere)
@@ -19,11 +17,10 @@ source("plot.r")
   N = 6    # amount of directions on which G is achieved
   D = 1000 # distance of cyclone in km
   
-<<<<<<< HEAD
-{
-=======
+
+
+
 #find_cyclones_main = function(){
->>>>>>> origin/master
   nIntervLon = 8
   nIntervLat = 6
 #  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
@@ -48,7 +45,7 @@ source("plot.r")
       day = day(data$time[i])
       hour = hour(data$time[i])
       image_path = paste(images_folder, year,"_",month,"_",day,"_",hour, ".png", sep="")
-      if(TRUE){
+      if(!file.exists(image_path)){
         data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
         data_tmp$values = data_tmp$values/100
         frame = get_map_frame(data_tmp)

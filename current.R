@@ -41,11 +41,8 @@ for(filename in files){
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   data = read_nc_file(data_filename)
   timestamps = length(data$time)
-<<<<<<< HEAD
-  for (i in 1:1){
-=======
+
   for (i in 1:5){
->>>>>>> origin/master
     year = year(data$time[i])
     month = month(data$time[i])
     day = day(data$time[i])
