@@ -41,7 +41,7 @@ for(filename in files){
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   data = read_nc_file(data_filename)
   timestamps = length(data$time)
-  for (i in 6:20){
+  for (i in 1:1){
     year = year(data$time[i])
     month = month(data$time[i])
     day = day(data$time[i])

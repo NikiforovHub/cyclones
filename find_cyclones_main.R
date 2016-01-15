@@ -19,7 +19,7 @@ source("find_cyclones_data.r")
   N = 6    # amount of directions on which G is achieved
   D = 1000 # distance of cyclone in km
   
-find_cyclones_main = function(){
+{
   nIntervLon = 8
   nIntervLat = 6
   data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
@@ -36,13 +36,13 @@ find_cyclones_main = function(){
     year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
     data = read_nc_file(data_filename)
     timestamps = length(data$time)
-    for (i in 1:timestamps){
+    for (i in 1:1){
       year = year(data$time[i])
       month = month(data$time[i])
       day = day(data$time[i])
       hour = hour(data$time[i])
       image_path = paste(images_folder, year,"_",month,"_",day,"_",hour, ".png", sep="")
-      if(!file.exists(image_path)){
+      if(TRUE){
         data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
         data_tmp$values = data_tmp$values/100
         frame = get_map_frame(data_tmp)

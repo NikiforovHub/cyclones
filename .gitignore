@@ -3,7 +3,10 @@
 ##########################
 data/**
 cache/**
+graphs_for_presentation/**
+graphs_ver_1.0/**
 images/**
+images_for_presentation/**
 images_ver_1.0/**
 images_для отчёта/**
 imgtmp/**
