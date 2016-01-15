@@ -297,7 +297,7 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
 
 find_isobars = function(data_tmp, cyclone_centers, grad_limit){
   isobars = list()
-  if (length(cyclone_centers)){
+  if (length(cyclone_centers)){ 
     maxLatInd = length(data_tmp$lat)
     maxLonInd = length(data_tmp$lon)
     for (i in 1:nrow(cyclone_centers)){
@@ -305,7 +305,8 @@ find_isobars = function(data_tmp, cyclone_centers, grad_limit){
       center_lon_ind = cyclone_centers$lon_ind[i]
       k = center_lat_ind
       l = center_lon_ind
-      level_found = logical()
+      #level_found = logical()
+      level_found = logical(8)
       level = numeric()
       level_lat_ind = integer()
       level_lon_ind = integer()
@@ -359,13 +360,23 @@ find_isobars = function(data_tmp, cyclone_centers, grad_limit){
               lon2 = data_tmp$lon[l]
               point2 = c(lon2, lat2)
               distance_to_center[count] = distCosine(point1,point2)/1000
-              break
             }
             k = k + p1*d
             l = l + p2*d
           }
         } 
       }
+      ## ----------------------------- ##
+      #temporary block
+      for (j in 1:8){
+        if (level_found[j] == FALSE){
+          level[count] = 1
+          level_lat_ind[count] = 1
+          level_lon_ind[count] = 1
+          distance_to_center[count] = 100000
+        }
+      }
+      ## ----------------------------- ##
       if (length(level_found)){
         for (m in 1:length(level_found)){
           contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
@@ -405,14 +416,16 @@ find_contour = function(contours, center_lon_ind, check_lat_ind){
   if (l){
     contour = NULL
     for (i in 1:l){
-      contours[[i]]$x = sapply(contours[[i]]$x,round)
-      contours[[i]]$y = sapply(contours[[i]]$y,round)
-      bool = contours[[i]]$x == center_lon_ind
+      #       contours[[i]]$x = sapply(contours[[i]]$x,round)
+      #       contours[[i]]$y = sapply(contours[[i]]$y,round)
+      bool = ((contours[[i]]$x < center_lon_ind + 1) & 
+                (contours[[i]]$x > center_lon_ind - 1))
       lat_ind_vector = contours[[i]]$y[bool]
       m = length(lat_ind_vector)
       if (m){
         for (k in 1:m){
-          if (lat_ind_vector[k] == check_lat_ind){
+          if ((lat_ind_vector[k] < check_lat_ind + 1) &
+              (lat_ind_vector[k] > check_lat_ind - 1)){
             level = list(level = contours[[i]]$level)
             x = list(x = contours[[i]]$x)
             y = list(y = contours[[i]]$y)

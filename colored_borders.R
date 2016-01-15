@@ -24,7 +24,7 @@ N = 5    # amount of directions on which G is achieved
 D = 1000 # distance of cyclone in km
 
 
-grad_limit = 0    # limit value of gradient pressure for finding isobars in hPa/100 km
+grad_limit = 0.4    # limit value of gradient pressure for finding isobars in hPa/100 km
 nIntervLon = 8
 nIntervLat = 6
 
@@ -41,11 +41,7 @@ for(filename in files){
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   data = read_nc_file(data_filename)
   timestamps = length(data$time)
-<<<<<<< HEAD
-  for (i in 1:1){
-=======
-  for (i in 1:5){
->>>>>>> origin/master
+  for (i in 1:20){
     year = year(data$time[i])
     month = month(data$time[i])
     day = day(data$time[i])
@@ -66,7 +62,7 @@ for(filename in files){
                                         aes(x = lon, y = lat), color = "green", size = 2)
       print(paste("hour_count",i))
       cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
-      isobars = find_isobars_2(data_tmp, cyclone_centers, grad_limit)
+      isobars = find_isobars(data_tmp, cyclone_centers, grad_limit)
       isobars_frame = get_isobars_frame(isobars, data_tmp)
       names(frame) = c("lat", "lon", "values")
       
@@ -120,26 +116,27 @@ for(filename in files){
       plot(map_final)
       dev.off()
       
-      #       if (length(cyclone_centers)){
-      #         if (length(isobars_frame) == 0){
-      #           map_final = map + geom_point(data = cyclone_centers, 
-      #                                        aes(x = lon, y = lat), color = "blue", size = 2) +
-      #             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
-      #         }else{
-      #           map_final = map + geom_point(data = cyclone_centers, 
-      #                                        aes(x = lon, y = lat), color = "blue", size = 2) +
-      #             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2) +
-      #             geom_point(data = isobars_frame, aes(x = lon, y = lat), color = "blue", size = 1)
-      #         }
-      #         png(file=image_path, width=2000,height=1400,res=150)
-      #         plot(map_final)
-      #         dev.off()
-      #       }else{
-      #         map_final = map + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
-      #         png(file=image_path, width=2000,height=1400,res=150)
-      #         plot(map_final)
-      #         dev.off()
-      #       }
+#       if (length(cyclone_centers)){
+#         if (length(isobars_frame) == 0){
+#           map_final = map + geom_point(data = cyclone_centers, 
+#                                        aes(x = lon, y = lat), color = "blue", size = 2) +
+#             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+#         }else{
+#           map_final = map + geom_point(data = cyclone_centers, 
+#                                        aes(x = lon, y = lat), color = "blue", size = 2) +
+#             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2) +
+#             geom_point(data = isobars_frame, aes(x = lon, y = lat), color = "blue", size = 1)
+#         }
+#         png(file=image_path, width=2000,height=1400,res=150)
+#         plot(map_final)
+#         dev.off()
+#       }else{
+#         map_final = map + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+#         png(file=image_path, width=2000,height=1400,res=150)
+#         plot(map_final)
+#         dev.off()
+#       }
     }
   }
 }
+

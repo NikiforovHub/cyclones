@@ -95,17 +95,3 @@ ggplot_map_frame = function(frame){
     geom_tile()
   return(p)
 }
-
-ggmap_map_frame = function(frame){
-  library(ggmap)
-  europe_map = get_map(location = "europe", maptype = "satellite", zoom = 3)
-  map = ggmap(europe_map, extent = "device") + 
-    geom_point(aes(x = X2, y = X1, alpha = (1-X3)), colour = "red", size = 0.7, data = frame)
-  return(map)
-}
-
-leaflet_map_frame = function(frame){
-  library(leaflet)
-  m = leaflet() %>% addTiles() %>% addCircles(data = frame, lat = ~ X1, lng = ~ X2, radius = 1, color = "red")
-  return(m)
-}

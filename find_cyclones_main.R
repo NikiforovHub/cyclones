@@ -6,7 +6,7 @@ library(geosphere)
 
 source("data.r")
 source("plot.r")
-source("find_cyclones_data.r")
+#source("find_cyclones_data.r")
 
 
 
@@ -19,11 +19,17 @@ source("find_cyclones_data.r")
   N = 6    # amount of directions on which G is achieved
   D = 1000 # distance of cyclone in km
   
+<<<<<<< HEAD
 {
+=======
+#find_cyclones_main = function(){
+>>>>>>> origin/master
   nIntervLon = 8
   nIntervLat = 6
-  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+#  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
 #  data_folder = "I:\\ERA-40\\ERA-40\\data"
+  data_folder = "C:/R/cyclones/data/data"
+
   images_folder = "images/"
 #  files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
   files = c("netcdf_1957.nc")
@@ -84,6 +90,6 @@ source("find_cyclones_data.r")
       }
     }
   }
-}
+#}
 
 
