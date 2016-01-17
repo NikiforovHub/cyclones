@@ -296,6 +296,7 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
 
 
 find_isobars = function(data_tmp, cyclone_centers, grad_limit){
+  Lmin = 100
   isobars = list()
   if (length(cyclone_centers)){ 
     maxLatInd = length(data_tmp$lat)
@@ -370,22 +371,27 @@ find_isobars = function(data_tmp, cyclone_centers, grad_limit){
       #temporary block
       for (j in 1:8){
         if (level_found[j] == FALSE){
-          level[count] = 1
-          level_lat_ind[count] = 1
-          level_lon_ind[count] = 1
-          distance_to_center[count] = 100000
+          level[j] = 1
+          level_lat_ind[j] = 1
+          level_lon_ind[j] = 1
+          distance_to_center[j] = 100000
         }
       }
       ## ----------------------------- ##
       if (length(level_found)){
         for (m in 1:length(level_found)){
-          contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
-                                  z = data_tmp$values, level = level[m])
-          contour = find_contour(contours, level_lon_ind[m], level_lat_ind[m])
-          isobars = c(isobars, contour)
+          if (distance_to_center[m] <= 200){
+            distance_to_center[m] = 100000
+          }
+          
         }
       }
     }
+    min_distance_index = which.min(distance_to_center)
+    contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
+                            z = data_tmp$values, level = level[min_distance_index])
+    contour = find_contour(contours, level_lon_ind[min_distance_index], level_lat_ind[min_distance_index])
+    isobars = c(isobars, contour)
   }
   return(isobars)
 }
