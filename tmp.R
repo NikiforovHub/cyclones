@@ -7,11 +7,11 @@
 
 model_formula = Delta_P ~ Pcenter + d + I(d^2) + Pcenter + I(d/Pcenter) + I(d/dmax)
 
-model = lm(model_formula, data = model_frame_total)
+model = lm(model_formula, data = model_frame)
 print(summary(model))
-plot(model_frame_total$Delta_P[1:500], type="l",x = model_frame_total$d[1:500],
+plot(model_frame$Delta_P[1:500], type="l",x = model_frame$d[1:500],
      xlab="Distance", ylab="Pressure difference")
-lines(predict(model,newdata = model_frame_total[1:500,]), type = "l", col=2,x = model_frame_total$d[1:500])
+lines(predict(model,newdata = model_frame[1:500,]), type = "l", col=2,x = model_frame$d[1:500])
 # lines(symb_model(d = model_frame_total_1$d[1:50]), type = "l", col=3,x = model_frame_total_1$d[1:50])
 
 # model_formula = Delta_P ~ I(Pcenter) + I(Pcenter^2) + I(Pcenter^3) + I(dmax) + I(dmax^2)+ I(dmax^3) + 

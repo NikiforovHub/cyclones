@@ -2,6 +2,9 @@
 # ----------------------------------------------------------- #
 # ----------------------------------------------------------- #
 
+
+library(geosphere)
+
 find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
   nCenters = nrow(centers_prob)
   maxLatInd = length(data_tmp$lat)
@@ -277,10 +280,16 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
           next_closed = is_closed(next_contour)
         }
         if (current_closed & !next_closed & step == 1){
+          current_contour[[1]]$center_lat_ind = center_lat_ind
+          current_contour[[1]]$center_lon_ind = center_lon_ind
+          current_contour[[1]]$center_lat = data_tmp$lat[center_lat_ind]
+          current_contour[[1]]$center_lon = data_tmp$lon[center_lon_ind]
           closest_isobars = c(closest_isobars, current_contour)
           break
         }
         if (!current_closed & next_closed & step == 1){
+          next_contour[[1]]$center_lat_ind = center_lat_ind
+          next_contour[[1]]$center_lon_ind = center_lon_ind
           closest_isobars = c(closest_isobars, next_contour)
           break
         }
@@ -681,4 +690,34 @@ get_model_frame = function(matrix, cyclone_centers, grad_limit){
   }
   names(model_frame_total) = c("Pcenter","d","Delta_P","dmax")
   return(model_frame_total)
+}
+
+
+get_min_max_radiuses = function(cyclone_centers, closest_isobars, data_tmp){
+  min_max_r = data.frame()
+  for (i in 1:nrow(cyclone_centers)){
+    for (j in 1:length(closest_isobars)){
+      if ((cyclone_centers$lat_ind[i] == closest_isobars[[j]]$center_lat_ind) &
+          (cyclone_centers$lon_ind[i] == closest_isobars[[j]]$center_lon_ind)){
+        center_point = c(cyclone_centers$lon[i], cyclone_centers$lat[i])
+        closest_isobars[[j]]$x = round(closest_isobars[[j]]$x)
+        closest_isobars[[j]]$y = round(closest_isobars[[j]]$y)
+        lat = data_tmp$lat[closest_isobars[[i]]$y]
+        lon = data_tmp$lon[closest_isobars[[i]]$x]
+        radiuses = NULL
+        for (k in 1:length(closest_isobars[[j]]$x)){
+          isobar_point = c(lon[k], lat[k])
+          radiuses[k] = distCosine(center_point,isobar_point)/1000
+        }
+        max_radius = max(radiuses)
+        min_radius = min(radiuses)
+        center_lat = cyclone_centers$lat
+        center_lon = cyclone_centers$lon
+        tmp = c(min_radius, max_radius, cyclone_centers$lat[i], cyclone_centers$lon[i])
+        min_max_r = rbind(min_max_r, tmp)
+      }
+    }
+  }
+  names(min_max_r) = c("min_radius", "max_radius", "center_lat", "center_lon")
+  return(min_max_r)
 }

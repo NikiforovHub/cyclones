@@ -1,5 +1,3 @@
-# install.packages("lubridate")
-
 library(ggmap)
 library(lubridate)
 library(geosphere)
@@ -19,6 +17,9 @@ source("find_cyclones_data.r")
   N = 6    # amount of directions on which G is achieved
   D = 1000 # distance of cyclone in km
   
+
+
+
 #find_cyclones_main = function(){
   nIntervLon = 8
   nIntervLat = 6
@@ -38,7 +39,7 @@ source("find_cyclones_data.r")
     year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
     data = read_nc_file(data_filename)
     timestamps = length(data$time)
-    for (i in 1:timestamps){
+    for (i in 1:1){
       year = year(data$time[i])
       month = month(data$time[i])
       day = day(data$time[i])
