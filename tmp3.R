@@ -15,7 +15,7 @@ plot(x,y, type = "l", xlim = c(0,100), ylim = c(0,35))
 # }
 
 for (k in 1:4){
-  for (j in 1:8){
+  for (j in 1:32){
     c1 = k %% 2
     c2 = ((k - c1)%%4)/2
     c3 = ((k - c1 - c2*2)%%8)/4
@@ -24,8 +24,8 @@ for (k in 1:4){
       c2 = 1
       c3 = 0
     }
-    p = 13
-    cl = rgb(c1*(j+(p-8))/p,c2*(j+(p-8))/p,c3*(j+(p-8))/p)
+    p = 52
+    cl = rgb(c1*(j+20)/p,c2*(j+20)/p,c3*(j+20)/p)
     y = rep((k-1)*8 + j,length(x))
     lines(x = x, y = y, type = "l", col = cl, lwd = 3)
   }

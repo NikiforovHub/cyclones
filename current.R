@@ -18,9 +18,9 @@ files = c("netcdf_1957.nc")
 R = 6400 # radius of Earth in km
 ##------------------------------------------##
 
-G = 1.0  # maximum value of average pressure gradient in hPa/100 km
+G = 1.5  # maximum value of average pressure gradient in hPa/100 km
 Lmin = 50 # minimum distance between neighbour points in km
-N = 5    # amount of directions on which G is achieved
+N = 6    # amount of directions on which G is achieved
 D = 1000 # distance of cyclone in km
 
 
@@ -63,7 +63,7 @@ for(filename in files){
                                         aes(x = lon, y = lat), color = "green", size = 2)
       print(paste("hour_count",i))
       cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
-      isobars = find_isobars_2(data_tmp, cyclone_centers, grad_limit)
+      isobars = find_isobars(data_tmp, cyclone_centers, grad_limit)
       isobars_frame = get_isobars_frame(isobars, data_tmp)
       names(frame) = c("lat", "lon", "values")
       
@@ -88,19 +88,18 @@ for(filename in files){
             stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
         }else{
           for (k in 1:nrow(cyclone_centers)){
-            for (j in 1:8){
-              isobars_frame = get_isobars_frame(list(isobars[[(k-1)*8 + j]]), data_tmp)
-              c1 = k %% 2
-              c2 = ((k - c1)%%4)/2
-              c3 = ((k - c1 - c2*2)%%8)/4
-              if (k%%8 == 0){
-                c1 = 1
-                c2 = 1
-                c3 = 0
-              }
-              len_is = length(isobars)
-              p = 13
-              isobar_color = rgb(c1*(j+(p-8))/p,c2*(j+(p-8))/p,c3*(j+(p-8))/p)
+            c1 = k %% 2
+            c2 = ((k - c1)%%4)/2
+            c3 = ((k - c1 - c2*2)%%8)/4
+            if (k%%8 == 0){
+              c1 = 1
+              c2 = 1
+              c3 = 0
+            }
+            p = length(isobars)
+            for (j in 1:length(isobars)){
+              isobars_frame = get_isobars_frame(list(isobars[[j]]), data_tmp)
+              isobar_color = rgb(c1*(j+15)/(p+15),c2*(j+15)/(p+15),c3*(j+15)/(p+15))
               map_final = map_final + geom_point(data = isobars_frame, aes(x = lon, y = lat),
                                                  color = isobar_color, size = 1)
             }
