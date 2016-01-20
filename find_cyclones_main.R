@@ -4,7 +4,7 @@ library(geosphere)
 
 source("data.r")
 source("plot.r")
-#source("find_cyclones_data.r")
+source("find_cyclones_data.r")
 
 
 
@@ -23,9 +23,9 @@ source("plot.r")
 #find_cyclones_main = function(){
   nIntervLon = 8
   nIntervLat = 6
-#  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
 #  data_folder = "I:\\ERA-40\\ERA-40\\data"
-  data_folder = "C:/R/cyclones/data/data"
+#  data_folder = "C:/R/cyclones/data/data"
 
   images_folder = "images/"
 #  files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
@@ -45,7 +45,7 @@ source("plot.r")
       day = day(data$time[i])
       hour = hour(data$time[i])
       image_path = paste(images_folder, year,"_",month,"_",day,"_",hour, ".png", sep="")
-      if(!file.exists(image_path)){
+      if(TRUE){
         data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
         data_tmp$values = data_tmp$values/100
         frame = get_map_frame(data_tmp)
