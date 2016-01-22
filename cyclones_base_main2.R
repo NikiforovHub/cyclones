@@ -28,12 +28,11 @@ nIntervLat = 6
 #  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
 data_folder = "\\\\192.168.13.1\\share\\Nikiforov Sergey\\ERA Iterim"
 #  data_folder = "C:/R/cyclones/data/data"
-cache_folder = "cache/ERA Interim/"
+cache_folder = "cache/ERA Interim addition/"
 images_folder = "images/"
 
-files_real_data = list.files(data_folder, pattern = "Real data", recursive = F, full.names = F)
-files_prognoses = list.files(data_folder, pattern = "Prognoses", recursive = F, full.names = F)
-files = c(files_real_data, files_prognoses)
+
+files = list.files(data_folder, pattern = "Prognoses", recursive = F, full.names = F)
 
 #  files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
 #  files = c("Prognoses 1988-09-01 to 1989-03-02.nc")

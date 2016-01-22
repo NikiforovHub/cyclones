@@ -5,7 +5,7 @@
 
 library(geosphere)
 
-find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
+find_cyclones = function(data_tmp, centers_prob,D,G,N,Lmin){
   nCenters = nrow(centers_prob)
   maxLatInd = length(data_tmp$lat)
   maxLonInd = length(data_tmp$lon)
@@ -82,7 +82,8 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
     if (Ntest >= N) {
       center_lat = data_tmp$lat[center_lat_ind]
       center_lon = data_tmp$lon[center_lon_ind]
-      cyclone_center = c(center_lat, center_lon, center_lat_ind,center_lon_ind,1)
+      pressure = data_tmp$values[center_lon_ind, center_lat_ind]
+      cyclone_center = c(center_lat, center_lon, center_lat_ind,center_lon_ind, pressure)
       cyclone_centers = rbind(cyclone_centers,cyclone_center,deparse.level = 0)
     }
   }
@@ -108,7 +109,7 @@ find_cyclones = function(data_tmp,centers_prob,D,G,N,Lmin){
   
   cyclone_centers = as.data.frame(cyclone_centers)
   if(length(cyclone_centers)){
-    names(cyclone_centers) = c("lat","lon", "lat_ind", "lon_ind", "values")
+    names(cyclone_centers) = c("lat","lon", "lat_ind", "lon_ind", "pressure")
   }
   return(cyclone_centers)
 }
@@ -252,6 +253,10 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
         }else break
       }
       if ((check_lat_ind == maxLatInd) & (current_closed)){
+        current_contour[[1]]$center_lat_ind = center_lat_ind
+        current_contour[[1]]$center_lon_ind = center_lon_ind
+        current_contour[[1]]$center_lat = data_tmp$lat[center_lat_ind]
+        current_contour[[1]]$center_lon = data_tmp$lon[center_lon_ind]
         closest_isobars = c(closest_isobars, current_contour)
         next
       }
@@ -290,6 +295,8 @@ find_closest_isobars = function(data_tmp, cyclone_centers){
         if (!current_closed & next_closed & step == 1){
           next_contour[[1]]$center_lat_ind = center_lat_ind
           next_contour[[1]]$center_lon_ind = center_lon_ind
+          next_contour[[1]]$center_lat = data_tmp$lat[center_lat_ind]
+          next_contour[[1]]$center_lon = data_tmp$lon[center_lon_ind]
           closest_isobars = c(closest_isobars, next_contour)
           break
         }
@@ -789,7 +796,7 @@ get_geom_center = function(contour, data_tmp){
 
 get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous, 
                                    closest_isobars, DBC, maxID){
-  t = 6 # time between stamps
+  t = 6 # time between stamps in hr
   cyclones_base_lines = data.table()
   ncyclones_current = nrow(cyclone_centers)
   ncyclones_previous = nrow(cyclones_base_lines_previous)
@@ -798,6 +805,7 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
     speed = NA
     center_lon = cyclone_centers$lon[i]
     center_lat = cyclone_centers$lat[i]
+    center_pressure = cyclone_centers$pressure[i]
     if (length(closest_isobars)){
       for(k in 1:length(closest_isobars)){
         if ((cyclone_centers$lat[i] == closest_isobars[[k]]$center_lat) &
@@ -807,6 +815,7 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
           area = closest_isobars[[k]]$area
           min_r = closest_isobars[[k]]$min_r
           max_r = closest_isobars[[k]]$max_r
+          break
         }else{
           geom_center_lon = NA
           geom_center_lat = NA
@@ -837,8 +846,8 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
           }
         }
       }
-      for(j in 1:ncyclones_previous){
-        if (is.na(ID)){
+      if (is.na(ID)){
+        for(j in 1:ncyclones_previous){
           point1 = c(center_lon, center_lat)
           point2 = c(cyclones_base_lines_previous$center_lon[j], 
                      cyclones_base_lines_previous$center_lat[j])
@@ -858,7 +867,8 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
     month = date[2]
     day = date[3]
     hour = date[4]
-    line = data.table(ID, year, month, day, hour, geom_center_lon, geom_center_lat, center_lon, center_lat, min_r, max_r, speed, area)
+    line = data.table(ID, year, month, day, hour, pressure, geom_center_lon, geom_center_lat, 
+                      center_lon, center_lat, min_r, max_r, speed, area)
     cyclones_base_lines = rbindlist(list(cyclones_base_lines, line))
   }
   return(cyclones_base_lines)

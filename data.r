@@ -22,6 +22,24 @@ read_nc_file = function(file_path){
 }
 
 
+read_nc_file2 = function(file_path){ # don't work properly: strange pressure values
+  library(RNetCDF)
+  nc <- open.nc(file_path)
+  lon <- var.get.nc(nc,"longitude")
+  nlon <- dim(lon)
+  lat <- var.get.nc(nc,"latitude")
+  time <- var.get.nc(nc,"time")
+  tunits <- att.get.nc(nc, "time", "units")
+  dates <- as.POSIXct(time*3600, origin = "1900-01-01", tz="GMT")
+  var <- var.get.nc(nc,"msl")
+  
+  result = list(lat=lat, lon=lon, time=dates, values=var)
+  close.nc(nc)
+  rm(nc)
+  return(result)
+}
+
+
 normalize_values = function(values){
   timestamps = dim(values)[3]
   for(i in 1:timestamps){
