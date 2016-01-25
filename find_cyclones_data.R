@@ -867,7 +867,7 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
     month = date[2]
     day = date[3]
     hour = date[4]
-    line = data.table(ID, year, month, day, hour, pressure, geom_center_lon, geom_center_lat, 
+    line = data.table(ID, year, month, day, hour, center_pressure, geom_center_lon, geom_center_lat, 
                       center_lon, center_lat, min_r, max_r, speed, area)
     cyclones_base_lines = rbindlist(list(cyclones_base_lines, line))
   }

@@ -31,9 +31,20 @@ data_folder = "\\\\192.168.13.1\\share\\Nikiforov Sergey\\ERA Iterim"
 cache_folder = "cache/ERA Interim/"
 images_folder = "images/"
 
-files_real_data = list.files(data_folder, pattern = "Real data", recursive = F, full.names = F)
-files_prognoses = list.files(data_folder, pattern = "Prognoses", recursive = F, full.names = F)
-files = c(files_real_data, files_prognoses)
+files_real_data = list.files("cache/ERA Interim ver 1.0/", pattern = "Real data", recursive = F, full.names = F)
+files_prognoses = list.files("cache/ERA Interim ver 1.0/", pattern = "Prognoses", recursive = F, full.names = F)
+##---------------------##
+## temporary block
+files_real_data = substr(files_real_data,1,37)
+files_prognoses = substr(files_prognoses,1,37)
+files_real_data1 = files_real_data[1:8]
+files_real_data2 = files_real_data[9:16]
+files_prognoses1 = files_prognoses[1:8]
+files_prognoses2 = files_prognoses[9:16]
+files1 = c(files_real_data1,files_prognoses1)
+files2 = c(files_real_data2,files_prognoses2)
+
+##---------------------##
 
 #  files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
 #  files = c("Prognoses 1988-09-01 to 1989-03-02.nc")
@@ -42,7 +53,7 @@ unlink("track_log.csv")
 # europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
 
 
-for(filename in files){
+for(filename in files1){
   tryCatch({
     centers_list = list()
     cyclones_base = data.table()
