@@ -1,21 +1,20 @@
-##########################
+﻿##########################
 ### My Own
 ##########################
 data/**
 cache/**
-graphs_for_presentation/**
+graphs/**
 graphs_ver_1.0/**
+graphs_for_presentation/**
 images/**
-<<<<<<< HEAD
 images_for_presentation/**
-=======
 images_colored/**
->>>>>>> origin/master
+images_clust/**
+images_clust_test/**
+images_clust ver 1.0/**
 images_ver_1.0/**
 images_для отчёта/**
 imgtmp/**
-graphs/**
-graphs_ver_1.0/**
 other/**
 .Rdata
 .Rhistory
