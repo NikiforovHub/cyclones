@@ -1,95 +1,58 @@
-find_isobars_2 = function(data_tmp, cyclone_centers, grad_limit){
-  Lmin = 100
-  isobars = list()
-  if (length(cyclone_centers)){ 
-    maxLatInd = length(data_tmp$lat)
-    maxLonInd = length(data_tmp$lon)
-    for (i in 1:nrow(cyclone_centers)){
-      center_lat_ind = cyclone_centers$lat_ind[i]
-      center_lon_ind = cyclone_centers$lon_ind[i]
-      k = center_lat_ind
-      l = center_lon_ind
-      #level_found = logical()
-      level_found = logical(8)
-      level = numeric()
-      level_lat_ind = integer()
-      level_lon_ind = integer()
-      distance_to_center = numeric()
-      grad = numeric()
-      count = 0
-      for(p1 in c(-1,0,1)){
-        # order of directions: NW,N,NE, W,E, SW,S,SE
-        for(p2 in c(-1,0,1)){
-          if((p1 == 0) & (p2 == 0)) next
-          count = count + 1
-          k=center_lat_ind
-          l=center_lon_ind
-          d = 1
-          while((k >= 1) & (k <= maxLatInd) & (l>=1) & (l<= maxLonInd) &
-                (k + p1*d >= 1) & (k + p1*d <= maxLatInd) &
-                (l + p2*d >= 1) & (l + p2*d <= maxLonInd)){
-            d = 1
-            repeat{
-              # Calculating distance between two points
-              # https://ru.wikipedia.org/wiki/%D0%A1%D1%84%D0%B5%D1%80%D0%B0 
-              # "Расстояние между двумя точками на сфере"
-              theta1 = data_tmp$lat[k + p1*d]
-              theta2 = data_tmp$lat[k]
-              phi1 = data_tmp$lon[l + p2*d]
-              phi2 = data_tmp$lon[l]
-              theta1 = theta1/180*pi
-              theta2 = theta2/180*pi
-              phi1 = phi1/180*pi
-              phi2 = phi2/180*pi
-              L = R*acos(sin(theta1)*sin(theta2) + 
-                           cos(theta1)*cos(theta2)*cos(phi1-phi2))
-              if (L >= Lmin) break
-              d = d + 1
-              if (((k + p1*d) < 1) | (k + p1*d > maxLatInd) |
-                  (l + p2*d < 1) | (l + p2*d > maxLonInd)) break
-            }
-            if (((k + p1*d) < 1) | (k + p1*d > maxLatInd) |
-                (l + p2*d < 1) | (l + p2*d > maxLonInd)) break
-            
-            grad = (data_tmp$values[l + p2*d, k + p1*d] - data_tmp$values[l,k])/L*100
-            if (grad < grad_limit){
-              level_found[count] = TRUE
-              level[count] = data_tmp$values[l,k]
-              level_lat_ind[count] = k
-              level_lon_ind[count] = l
-              lat1 = data_tmp$lat[center_lat_ind]
-              lon1 = data_tmp$lon[center_lon_ind]
-              point1 = c(lon1, lat1)
-              lat2 = data_tmp$lat[k]
-              lon2 = data_tmp$lon[l]
-              point2 = c(lon2, lat2)
-              distance_to_center[count] = distCosine(point1,point2)/1000
-            }
-            k = k + p1*d
-            l = l + p2*d
-          }
-        } 
-      }
-      ## ----------------------------- ##
-      #temporary block
-      for (j in 1:8){
-        if (level_found[j] == FALSE){
-          level[count] = 1
-          level_lat_ind[count] = 1
-          level_lon_ind[count] = 1
-          distance_to_center[count] = 100000
-        }
-      }
-      ## ----------------------------- ##
-      if (length(level_found)){
-        for (m in 1:length(level_found)){
-          contours = contourLines(x = 1:maxLonInd, y = 1:maxLatInd, 
-                                  z = data_tmp$values, level = level[m])
-          contour = find_contour(contours, level_lon_ind[m], level_lat_ind[m])
-          isobars = c(isobars, contour)
-        }
-      }
-    }
+cache_folder = "cache/ERA Interim/"
+
+cyclones_base_all = get_database_all(cache_folder)
+clust_data_all = get_clusterization_data(cyclones_base_all)
+clust_data = clust_data_all[,c(2,5:9),with = FALSE]
+clust_data = normalize_clust_data(clust_data)
+# clust_data$brng = clust_data$brng*4
+cl4 = kmeans(clust_data, centers = 4)
+cl5 = kmeans(clust_data, centers = 5)
+
+plot(clust_data, col = cl4$cluster)
+plot(clust_data, col = cl5$cluster)
+
+
+
+clust4_IDs = list()
+for (i in 1:4){
+  clust4_IDs[[i]] = clust_data_all$ID[(cl4$cluster == i)]
+}
+
+
+map = get_map(location = "europe", maptype = "terrain", zoom = 3)
+map = ggmap(map)
+
+for (i in 1:4){
+  for (j in 1:length(clust4_IDs[[i]])){
+    sub_data = cyclones_base_all[ ID == clust4_IDs[[i]][j] ]
+    map = map + geom_point(data = sub_data, aes(x = geom_center_lon, y = geom_center_lat), 
+                           color = 1+i, size = 4, alpha = 0.3) + 
+      #       geom_line(data = sub_data, aes(x = geom_center_lon, y = geom_center_lat), 
+      #                 color = 1+i, size = 1)
+      rm(sub_data)
   }
-  return(isobars)
+  
+}
+plot(map)
+
+
+
+
+
+
+
+
+
+
+
+
+
+image_name = paste0("clust4_",i,".png")
+image_path = paste0(images_folder, image_name)
+
+if(!file.exists(image_path)){
+  
+  png(file=image_path, width=2000,height=1400,res=150)
+  plot(map)
+  dev.off()
 }

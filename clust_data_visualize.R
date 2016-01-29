@@ -36,6 +36,7 @@ clust_data = normalize_clust_data(clust_data)
 cl4 = kmeans(clust_data, centers = 4)
 cl5 = kmeans(clust_data, centers = 5)
 
+
 clust4_IDs = list()
 for (i in 1:4){
   clust4_IDs[[i]] = clust_data_all$ID[(cl4$cluster == i)] 
@@ -90,8 +91,8 @@ for(filename in files_real_data){
     save(clust4_sum_list, file = cache_path)
     print(paste0(cache_path," saved"))
   }else{
-    print(paste0("Cache file ",cache_path," loaded"))
     load(file = cache_path)
+    print(paste0("Cache file ",cache_path," loaded"))
   }
   
   
@@ -120,8 +121,8 @@ for(filename in files_real_data){
     save(clust5_sum_list, file = cache_path)
     print(paste0(cache_path," saved"))
   }else{
-    print(paste0("Cache file ",cache_path," loaded"))
     load(file = cache_path)
+    print(paste0("Cache file ",cache_path," loaded"))
   }
 }
 
@@ -140,7 +141,6 @@ for (i in 1:length(clust4_sum_list)){
     dev.off()
   }
 }
-
 
 for (i in 1:length(clust5_sum_list)){
   image_name = paste0("clust5_",i,".png")
