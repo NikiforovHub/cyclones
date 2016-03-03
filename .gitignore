@@ -1,16 +1,13 @@
-##########################
-### My Own
-##########################
+#################
+## My Own
+#################
 data/**
 cache/**
 graphs_for_presentation/**
 graphs_ver_1.0/**
 images/**
-<<<<<<< HEAD
 images_for_presentation/**
-=======
 images_colored/**
->>>>>>> origin/master
 images_ver_1.0/**
 images_для отчёта/**
 imgtmp/**
@@ -19,6 +16,7 @@ graphs_ver_1.0/**
 other/**
 .Rdata
 .Rhistory
+grad_track.data
 track_log.csv
 
 
