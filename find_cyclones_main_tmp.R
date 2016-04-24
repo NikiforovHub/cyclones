@@ -1,9 +1,10 @@
 library(ggmap)
 library(lubridate)
 library(geosphere)
+# library(directlabels)
 
 source("data.r")
-source("plot.r")
+source("plot_tmp.r")
 source("find_cyclones_data.r")
 
 
@@ -51,15 +52,13 @@ source("find_cyclones_data.r")
         data_tmp = list(lat = data$lat, lon = data$lon, values = data$values[,,i])
         data_tmp$values = data_tmp$values/100
         frame = get_map_frame(data_tmp)
-        map = ggmap_map_frame(frame,europe_map)
+        
         matrix = data$values[,,i]
         min_list = find_loc_mins(matrix, data_tmp, nIntervLon, nIntervLat)
         min_points = min_list_to_frame(min_list)
-        map_mins = map + geom_point(data = min_points, 
-                                    aes(x = lon, y = lat), color = "black", size = 2)
+       
         centers_prob = find_possible_centers(min_list)
-        map_probs = map_mins + geom_point(data = centers_prob, 
-                                          aes(x = lon, y = lat), color = "green", size = 2)
+        
         print(Sys.time())
         print(paste("hour_count",i))
         cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
@@ -67,22 +66,32 @@ source("find_cyclones_data.r")
         closest_isobars_frame = get_isobars_frame(closest_isobars, data_tmp)
         names(frame) = c("lat", "lon", "values")
         
+        map = ggmap_map_frame(frame,europe_map)
+        map_mins = map + geom_point(data = min_points, 
+                                    aes(x = lon, y = lat), color = "black", size = 2)
+        map_probs = map_mins + geom_point(data = centers_prob, 
+                                          aes(x = lon, y = lat), color = "green", size = 2)
+        
         if (length(cyclone_centers)){
           if (length(closest_isobars_frame) == 0){
             map_final = map + geom_point(data = cyclone_centers, 
                                          aes(x = lon, y = lat), color = "blue", size = 2) +
-              stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+              geom_contour(data = frame, aes(x = lon, y = lat, z = values),
+                           color = "black", binwidth = 2)
           }else{
             map_final = map + geom_point(data = cyclone_centers, 
                                          aes(x = lon, y = lat), color = "blue", size = 2) +
-              stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2) +
+              geom_contour(data = frame, aes(x = lon, y = lat, z = values),
+                           color = "black", binwidth = 2) +
               geom_point(data = closest_isobars_frame, aes(x = lon, y = lat), color = "blue", size = 1)
+
           }
           png(file=image_path, width=2000,height=1400,res=150)
           plot(map_final)
           dev.off()
         }else{
-          map_final = map + stat_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+          map_final = map + geom_contour(data = frame, aes(x = lon, y = lat, z = values), binwidth = 2)
+          direct.label(map_final,"top.points")
           png(file=image_path, width=2000,height=1400,res=150)
           plot(map_final)
           dev.off()
