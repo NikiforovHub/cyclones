@@ -2,7 +2,6 @@ find_isobars_binary = function(data_tmp, cyclone_centers){
   isobars = list()
   min = min(data_tmp$values)
   max = max(data_tmp$values)
-  data_tmp$values = (data_tmp$values-min)/(max-min)
   values = (data_tmp$values-min)/(max-min)
   threshold = 0.2
   values[values >= threshold] = 0
@@ -20,7 +19,7 @@ find_isobars_binary = function(data_tmp, cyclone_centers){
     k = center_lat_ind
     l = center_lon_ind
     
-    while(data_tmp$values[l,k]&
+    while(values[l,k]&
           (k!=1|p1==1)&(k!=maxLatInd|p1==-1)&
           (l!=1|p2==1)&(l!=maxLonInd|p2==-1)){
       k = k + p1
