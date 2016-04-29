@@ -6,11 +6,8 @@ library(geosphere)
 source("data.r")
 source("plot.r")
 source("find_cyclones_data.r")
-<<<<<<< HEAD
 source("model_data_data.r")
-=======
 source("cyclones_base_data.R")
->>>>>>> origin/master
 
 
 

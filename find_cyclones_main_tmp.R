@@ -28,7 +28,7 @@ data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
 #data_folder = "I:\\ERA-40\\ERA-40\\data"
 #data_folder = "C:/R/cyclones/data/data"
 
-images_folder = "imgtmp/"
+images_folder = "images/"
 #  files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")
 files = c("netcdf_1957.nc")
 centers_list = list()
@@ -60,7 +60,7 @@ for(filename in files){
       print(Sys.time())
       print(paste("hour_count",i))
       cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
-      closest_isobars = find_isobars_by_max(data_tmp, cyclone_centers, 1500)
+      closest_isobars = find_isobars_by_area(data_tmp, cyclone_centers, 10)
       closest_isobars_frame = get_isobars_frame(closest_isobars, data_tmp)
       names(frame) = c("lat", "lon", "values")
       

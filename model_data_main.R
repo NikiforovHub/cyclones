@@ -34,9 +34,9 @@ centers_list = list()
 unlink("track_log.csv")
 unlink("grad_track.data")
 values_data = list()
-model_frame_total = data.frame()
 
 for(filename in files){
+  model_frame_total = data.frame()
   data_filename = paste(data_folder,filename, sep='/')
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   cache_path = paste0(cache_folder, year, "model.cache")

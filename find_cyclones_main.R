@@ -23,9 +23,9 @@ source("find_cyclones_data.r")
 #find_cyclones_main = function(){
   nIntervLon = 8
   nIntervLat = 6
-#  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
+  data_folder = "\\\\192.168.13.1\\share\\Dudko\\data\\ERA-40\\data"
 #  data_folder = "I:\\ERA-40\\ERA-40\\data"
- data_folder = "C:/R/cyclones/data/data"
+# data_folder = "C:/R/cyclones/data/data"
 
   images_folder = "images/"
 #  files = c("netcdf_1957.nc", "netcdf_1970.nc", "netcdf_1971.nc", "netcdf_2001.nc")

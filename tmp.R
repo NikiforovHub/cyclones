@@ -22,3 +22,26 @@ lines(predict(model,newdata = model_frame[1:500,]), type = "l", col=2,x = model_
 
 model_frame_total$model_predict = predict(model, newdata=model_frame_total)
 
+a = 0.5
+model_formula = P ~ d + I(d^2) + Pcenter + I(d/Pcenter) + I(d/dmax)
+model_formula = P ~ I(1/( 1 + exp(-3e-3*(d-dmax/2)) ))
+
+
+
+model = lm(model_formula, data = model_frame)
+print(summary(model))
+plot(x = model_frame$d[M:N], y = model_frame$P[M:N], type="p",
+     xlab="Distance", ylab="Pressure", main = "P ~ Sigmoid(d)")
+lines(predict(model,newdata = model_frame[M:N,]), type = "p", col=2,x = model_frame$d[M:N])
+dev.copy(png, file = "Sigmoid function.png", width=1400, height=1400, res=150)
+dev.off() 
+
+
+model_frame_total$model_predict = predict(model, newdata=model_frame_total)
+
+
+
+plot(x, , type = "l")
+
+
+
