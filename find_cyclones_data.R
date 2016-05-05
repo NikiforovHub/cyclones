@@ -90,13 +90,13 @@ find_cyclones = function(data_tmp, centers_prob,D,G,N,Lmin){
   colnames(track) = c("lat","lon","SW", "W", "NW", "S", "N", "SE", "E", "NE")
   track_t = t(track)
   print(track_t,digits = 2)
-  fileConn = file("track_log.csv")
-  write.table(format(track_t, digits=2), file = "track_log.csv", 
-              append = TRUE, sep='\t',quote = FALSE)
-  a = paste("day")
-  write.table(a, file = "track_log.csv", 
-              append = TRUE, sep = " ", quote = FALSE)
-  close(fileConn)
+#   fileConn = file("track_log.csv")
+#   write.table(format(track_t, digits=2), file = "track_log.csv", 
+#               append = TRUE, sep='\t',quote = FALSE)
+#   a = paste("day")
+#   write.table(a, file = "track_log.csv", 
+#               append = TRUE, sep = " ", quote = FALSE)
+#   close(fileConn)
   
 #   fileConn = file("grad_track.data")
 #   write.table(format(grad_tmp, digits=2), file = "grad_track.data", 

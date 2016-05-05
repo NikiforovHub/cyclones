@@ -98,7 +98,7 @@ get_geom_center = function(contour, data_tmp){
 
 
 get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous, 
-                                   closest_isobars, DBC, maxID){
+                                   closest_isobars, DBC, maxID, date){
   t = 6 # time between stamps in hr
   cyclones_base_lines = data.table()
   ncyclones_current = nrow(cyclone_centers)
@@ -166,11 +166,8 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
       ID = maxID + 1
       maxID = ID
     }
-    year = date[1]
-    month = date[2]
-    day = date[3]
-    hour = date[4]
-    line = data.table(ID, year, month, day, hour, center_pressure, geom_center_lon, geom_center_lat, 
+    
+    line = data.table(ID, date, center_pressure, geom_center_lon, geom_center_lat, 
                       center_lon, center_lat, min_r, max_r, speed, area)
     cyclones_base_lines = rbindlist(list(cyclones_base_lines, line))
   }

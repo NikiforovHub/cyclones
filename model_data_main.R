@@ -2,12 +2,13 @@ library(ggmap)
 #library(data.table)
 library(lubridate)
 library(geosphere)
+# library(foreach)
+# library(doParallel)
 
 source("data.r")
 source("plot.r")
 source("find_cyclones_data.r")
 source("model_data_data.r")
-
 
 R = 6400 # radius of Earth in km
 ##------------------------------------------##
@@ -34,6 +35,10 @@ centers_list = list()
 unlink("track_log.csv")
 unlink("grad_track.data")
 values_data = list()
+
+
+
+
 
 for(filename in files){
   model_frame_total = data.frame()
@@ -64,8 +69,9 @@ for(filename in files){
       #                                         aes(x = lon, y = lat), color = "green", size = 2)
       print(paste("hour_count",i))
       cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
-      date = c(year = year, month = month, day = day, hour = hour)
-      model_frame = get_model_frame(matrix,cyclone_centers,grad_limit)
+      date = paste(year = year, month = month, day = day, hour = hour, sep = "-")
+      date = as.POSIXlt(date, tz = "GMT","%Y-%m-%d-%H")
+      model_frame = get_model_frame(matrix,cyclone_centers,date,grad_limit)
       model_frame_total = rbind.data.frame(model_frame_total,model_frame)
       #      values_data[[i]] = get_values_data(data_tmp, cyclone_centers, date)
       #       for (cyclone_number in 1:length(values_data[[i]])){
@@ -113,5 +119,6 @@ for(filename in files){
     }
     save(model_frame_total, file = cache_path)
   }
-  
+  rm(data)
+  gc()
 }

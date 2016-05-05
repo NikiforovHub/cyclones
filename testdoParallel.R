@@ -5,19 +5,19 @@ library(geosphere)
 num_cores = detectCores() - 1
 cl<-makeCluster(num_cores)
 registerDoParallel(cl)
-clusterEvalQ(cl, library(geosphere))
+clusterEvalQ(cl, {
+  library(geosphere)
+  library(lubridate)})
 
-a = 5
-
-foreach(x=list("a","b","c"))  %dopar%  
+p1 = c(0,0)
+p2 = c(45,45)
+filenames = list("a","b","c")
+foreach(filename = filenames)  %dopar%  
 {
-  tryCatch({
-    distCosine(c(10,10),c(20,20))
-    fileConn = file(paste(x,".txt",sep = ""))
-    write(distCosine(c(10,10),c(20,20)), file = paste(x,".txt",sep = ""), append = TRUE)
-    close(fileConn)
-  }, error = function(e) return(paste0("The variable '", x, "'", 
-                                       " caused the error: '", e, "'")))
+  y = rep(distCosine(p1,p2),5)
+  save(y, file = paste0("other/",filename))
+  z = tz(date())
+  save(z, file = paste0("other/",filename,"date"))
 }
   
 stopImplicitCluster()

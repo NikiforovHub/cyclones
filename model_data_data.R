@@ -174,7 +174,7 @@ get_cyclones_base_lines = function(cyclone_centers, cyclones_base_lines_previous
 }
 
 
-get_model_frame = function(matrix, cyclone_centers, grad_limit){
+get_model_frame = function(matrix, cyclone_centers, date, grad_limit){
   nCenters = nrow(cyclone_centers)
   maxLatInd = length(data_tmp$lat)
   maxLonInd = length(data_tmp$lon)
@@ -226,26 +226,26 @@ get_model_frame = function(matrix, cyclone_centers, grad_limit){
           Delta_p = data_tmp$values[l2,k2] - 
             data_tmp$values[center_lon_ind,center_lat_ind]
           p = data_tmp$values[l2,k2]
-          frame_line = data.frame(center_p,Lcenter,p,Delta_p,NA)
+          frame_line = data.frame(date,center_p,Lcenter,p,Delta_p,NA)
           model_frame = rbind.data.frame(model_frame,frame_line)
           if (grad < grad_limit){
-            dmax_row = rep(model_frame[nrow(model_frame),2],nrow(model_frame))
-            model_frame[,5] = dmax_row
+            dmax_row = rep(model_frame[nrow(model_frame),3],nrow(model_frame))
+            model_frame[,6] = dmax_row
             break
           }
           k1 = k2
           l1 = l2
         }
         if (nrow(model_frame)){
-          if (is.na(model_frame[nrow(model_frame),5])){
-            dmax_row = rep(model_frame[nrow(model_frame),2],nrow(model_frame))
-            model_frame[,5] = dmax_row
+          if (is.na(model_frame[nrow(model_frame),6])){
+            dmax_row = rep(model_frame[nrow(model_frame),3],nrow(model_frame))
+            model_frame[,6] = dmax_row
           }
         }
         model_frame_total = rbind.data.frame(model_frame_total,model_frame)
       }
     }
   }
-  names(model_frame_total) = c("Pcenter","d","P","Delta_P","dmax")
+  names(model_frame_total) = c("Date","Pcenter","d","P","Delta_P","dmax")
   return(model_frame_total)
 }
