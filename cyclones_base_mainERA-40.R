@@ -9,7 +9,7 @@ source("find_cyclones_data.r")
 source("model_data_data.r")
 source("cyclones_base_data.R")
 
-# setwd("//192.168.13.1/share/Nikiforov Sergey/R/cyclones")
+#setwd("//192.168.13.1/share/Nikiforov Sergey/R/cyclones")
 
 
 R = 6400 # radius of Earth in km
@@ -36,8 +36,8 @@ data_folder = "//192.168.13.1/share/Dudko/data/ERA-40/data"
 cache_folder = "cache/ERA-40/"
 images_folder = "images/"
 
-files_real_data = list.files("cache/ERA Interim ver 1.0/", pattern = "Real data", recursive = F, full.names = F)
-files_prognoses = list.files("cache/ERA Interim ver 1.0/", pattern = "Prognoses", recursive = F, full.names = F)
+#files_real_data = list.files("cache/ERA Interim ver 1.0/", pattern = "Real data", recursive = F, full.names = F)
+#files_prognoses = list.files("cache/ERA Interim ver 1.0/", pattern = "Prognoses", recursive = F, full.names = F)
 # ##---------------------##
 # ## temporary block
 # files_real_data = substr(files_real_data,1,37)
@@ -53,23 +53,22 @@ files_prognoses = list.files("cache/ERA Interim ver 1.0/", pattern = "Prognoses"
 
 files = list.files(data_folder)
 
-unlink("track_log.csv")
+#unlink("track_log.csv")
 # europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
 #netcdf_1958.nc
 
-#for(filename in files[2:length(files)]){
-for(filename in files){
+for(filename in files[2:length(files)]){
    tryCatch({
     centers_list = list()
     cyclones_base = data.table()
     cyclones_centers_lines_previous = data.table()
     data_filename = paste(data_folder,filename, sep='/')
     data = read_nc_file(data_filename)
+    gc()
     timestamps = length(data$time)
     cyclones_base_lines_previous = data.table()
     maxID = 0
     cache_path = paste0(cache_folder, filename, ".cache")
-    load(cache_path)
     if(!file.exists(cache_path)){
       for (i in 1:timestamps){
         maxID = max(cyclones_base$ID)
@@ -150,16 +149,18 @@ for(filename in files){
         if (i %% 50 == 0){
           save(cyclones_base, file = paste0(cache_folder, filename, ".cache"))
           write(i, file = paste0(cache_folder, filename, " index.txt"))
-          
-        } 
+          gc()
+        }
       }
       setkey(cyclones_base, ID)
       save(cyclones_base, file = paste(cache_folder, filename, ".cache", sep = ""))
-      write(paste0("cyclone base data for ", year, "year is ready", ), 
+      write(paste0("cyclone base data for ", year, "year is ready"), 
             file = paste0(cache_folder, filename, " ready.txt"))
       stoptime <- proc.time()
       print("for", data_filename)
       print(stoptime - starttime)
+      rm(data)
+      gc()
     }
   }, error=function(e, f = filename){
     cat("ERROR :",conditionMessage(e), "\n")
