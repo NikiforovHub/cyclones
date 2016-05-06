@@ -25,7 +25,7 @@ DBC = 500 # distance between centers, which assumed as one cyclone
 
 
 
-starttime <- proc.time()
+
 #find_cyclones_main = function(){
 nIntervLon = 8
 nIntervLat = 6
@@ -53,13 +53,12 @@ files_prognoses = list.files("cache/ERA Interim ver 1.0/", pattern = "Prognoses"
 
 files = list.files(data_folder)
 
-unlink("track_log.csv")
+# unlink("track_log.csv")
 # europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
-#netcdf_1958.nc
+# netcdf_1958.nc
 
-#for(filename in files[2:length(files)]){
-for(filename in files){
-   tryCatch({
+for(filename in files[30:length(files)]){
+  tryCatch({
     centers_list = list()
     cyclones_base = data.table()
     cyclones_centers_lines_previous = data.table()
@@ -69,8 +68,8 @@ for(filename in files){
     cyclones_base_lines_previous = data.table()
     maxID = 0
     cache_path = paste0(cache_folder, filename, ".cache")
-    load(cache_path)
     if(!file.exists(cache_path)){
+      starttime <- proc.time()
       for (i in 1:timestamps){
         maxID = max(cyclones_base$ID)
         year = lubridate::year(data$time[i])
@@ -92,7 +91,7 @@ for(filename in files){
         centers_prob = find_possible_centers(min_list)
         #       map_probs = map_mins + geom_point(data = centers_prob, 
         #                                         aes(x = lon, y = lat), color = "green", size = 2)
-        sink("sink-examp0.txt") # suppress output of find_cyclones
+        sink("sink-examp.txt") # suppress output of find_cyclones
         print(paste("hour_count",i))
         cyclone_centers = find_cyclones(data_tmp,centers_prob,D,G,N,Lmin)
         sink() # end suppress output of find_cyclones
@@ -100,7 +99,7 @@ for(filename in files){
         nisobars = length(closest_isobars)
         if (nisobars){
           for (k in 1:nisobars){
-            if (is_Polygon(closest_isobars[[k]])){
+            if (is_Polygon(closest_isobars[[k]])){ # simple check polygon or not
               geom_center = get_geom_center(closest_isobars[[k]], data_tmp)
               closest_isobars[[k]]$area = get_contour_area(closest_isobars[[k]],data_tmp)
               closest_isobars[[k]]$geom_center_lon = geom_center[1]

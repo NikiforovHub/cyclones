@@ -308,3 +308,34 @@ normalize_clust_data = function(clust_data){
   }
   return(clust_data)
 }
+
+
+is_Polygon <- function(contour, fix=FALSE) {
+  contour$x = round(contour$x)
+  contour$y = round(contour$y)
+  lat = data_tmp$lat[contour$y]
+  lon = data_tmp$lon[contour$x]
+  x <- matrix(c(lon,lat),ncol = 2) 
+  x <- stats::na.omit(x)
+  if (nrow(x) < 4) {
+    warning('this is not a polygon (insufficent number of vertices)')
+    return(FALSE)
+  }
+  if (length(unique(x[,1]))==1) {
+    warning('All longitudes are the same (not a polygon)')
+    return(FALSE)
+  }
+  if (length(unique(x[,2]))==1) {
+    warning('All latitudes are the same (not a polygon)')
+    return(FALSE)
+  }
+  if (! all(!(is.na(x))) ) {
+    warning('polygon has NA values)')
+    return(FALSE)
+  }
+  if (! isTRUE(all.equal(x[1,], x[nrow(x),]))) {
+    warning('this is not a valid (closed) polygon. The first vertex is not equal to the last vertex')	
+    return(FALSE)
+  }
+  return(TRUE)
+}

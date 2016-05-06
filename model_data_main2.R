@@ -10,6 +10,8 @@ source("plot.r")
 source("find_cyclones_data.r")
 source("model_data_data.r")
 
+# setwd("//192.168.13.1/share/Nikiforov Sergey/R/cyclones")
+
 R = 6400 # radius of Earth in km
 ##------------------------------------------##
 
@@ -40,14 +42,13 @@ values_data = list()
 
 
 
-for(filename in files){
+for(filename in files[length(files):30]){
   model_frame_total = data.frame()
   data_filename = paste(data_folder,filename, sep='/')
   year = na.omit(as.numeric(unlist(strsplit(filename, "[^0-9]+"))))
   cache_path = paste0(cache_folder, year, "model.cache")
-  data = read_nc_file2(data_filename)
+  data = read_nc_file(data_filename)
   timestamps = length(data$time)
-  
   start = 1
   for (i in seq(from = 100,to = 1400, by = 100)){
     file = paste0(cache_path, " timestamp ", i)
@@ -59,7 +60,7 @@ for(filename in files){
     }
   }
   if(!file.exists(cache_path)){
-    for (i in 1:timestamps){
+    for (i in start:timestamps){
       year = year(data$time[i])
       month = month(data$time[i])
       day = day(data$time[i])
