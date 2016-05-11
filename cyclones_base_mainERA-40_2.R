@@ -71,7 +71,6 @@ for(filename in files[30:length(files)]){
     if(!file.exists(cache_path)){
       starttime <- proc.time()
       for (i in 1:timestamps){
-        maxID = max(cyclones_base$ID)
         year = lubridate::year(data$time[i])
         month = lubridate::month(data$time[i])
         day = lubridate::day(data$time[i])
@@ -157,8 +156,10 @@ for(filename in files[30:length(files)]){
       write(paste0("cyclone base data for ", year, "year is ready", ), 
             file = paste0(cache_folder, filename, " ready.txt"))
       stoptime <- proc.time()
-      print("for", data_filename)
+      print(paste0("for ", data_filename))
       print(stoptime - starttime)
+      rm(data)
+      gc()
     }
   }, error=function(e, f = filename){
     cat("ERROR :",conditionMessage(e), "\n")

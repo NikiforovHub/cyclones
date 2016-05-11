@@ -57,8 +57,8 @@ files = list.files(data_folder)
 # europe_map = get_map(location = "europe", maptype = "terrain", zoom = 3)
 #netcdf_1958.nc
 
-for(filename in files[2:length(files)]){
-   tryCatch({
+for(filename in "netcdf_1959.nc"){
+ # tryCatch({
     centers_list = list()
     cyclones_base = data.table()
     cyclones_centers_lines_previous = data.table()
@@ -69,8 +69,10 @@ for(filename in files[2:length(files)]){
     cyclones_base_lines_previous = data.table()
     maxID = 0
     cache_path = paste0(cache_folder, filename, ".cache")
-    if(!file.exists(cache_path)){
-      for (i in 1:timestamps){
+    load(cache_path)
+    #if(!file.exists(cache_path)){
+      for (i in 1451:timestamps){
+        maxID = max(cyclones_base$ID)
         year = lubridate::year(data$time[i])
         month = lubridate::month(data$time[i])
         day = lubridate::day(data$time[i])
@@ -152,19 +154,19 @@ for(filename in files[2:length(files)]){
         }
       }
       setkey(cyclones_base, ID)
-      save(cyclones_base, file = paste(cache_folder, filename, ".cache", sep = ""))
-      write(paste0("cyclone base data for ", year, "year is ready"), 
-            file = paste0(cache_folder, filename, " ready.txt"))
+      #save(cyclones_base, file = paste(cache_folder, filename, ".cache", sep = ""))
+      #write(paste0("cyclone base data for ", year, "year is ready"), 
+      #     file = paste0(cache_folder, filename, " ready.txt"))
       stoptime <- proc.time()
       print(paste0("for ", data_filename))
       print(stoptime - starttime)
       rm(data)
       gc()
     }
-  }, error=function(e, f = filename){
-    cat("ERROR :",conditionMessage(e), "\n")
-    print(paste("in ",filename,sep=""))
-    write(conditionMessage(e), file = paste0(cache_folder, filename, " error.txt"))
-  })
-}
+#   }, error=function(e, f = filename){
+#     cat("ERROR :",conditionMessage(e), "\n")
+#     print(paste("in ",filename,sep=""))
+#     write(conditionMessage(e), file = paste0(cache_folder, filename, " error.txt"))
+#   })
+#}
 #}
